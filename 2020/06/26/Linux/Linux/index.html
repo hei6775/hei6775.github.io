@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="常用命令linux 命令重定向&gt;、&gt;&gt;、 1&gt;、 2&gt;、 1&gt;&gt;、 2&gt;&gt;、 &lt;&gt;和&gt;&gt;：他们俩其实唯一的区别就是&gt;是重定向到一个文件，&gt;&gt;是追加内容到文件。两个命令都是如果文件不存在则创建文件 1&gt;、 2&gt;、 1&gt;&gt;、 2&gt;&gt;1python pp.py 1&gt;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux">
+<meta property="og:url" content="http://yoursite.com/2020/06/26/Linux/Linux/index.html">
+<meta property="og:site_name" content="hei">
+<meta property="og:description" content="常用命令linux 命令重定向&gt;、&gt;&gt;、 1&gt;、 2&gt;、 1&gt;&gt;、 2&gt;&gt;、 &lt;&gt;和&gt;&gt;：他们俩其实唯一的区别就是&gt;是重定向到一个文件，&gt;&gt;是追加内容到文件。两个命令都是如果文件不存在则创建文件 1&gt;、 2&gt;、 1&gt;&gt;、 2&gt;&gt;1python pp.py 1&gt;">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-06-26T07:23:57.000Z">
+<meta property="article:modified_time" content="2020-06-26T07:24:08.323Z">
+<meta property="article:author" content="Hei">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2020/06/26/Linux/Linux/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Linux | hei</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">hei</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/26/Linux/Linux/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Hei">
+      <meta itemprop="description" content="心里有梦，眼里有光">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="hei">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-06-26 15:23:57 / 修改时间：15:24:08" itemprop="dateCreated datePublished" datetime="2020-06-26T15:23:57+08:00">2020-06-26</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h1><h2 id="linux-命令重定向-gt-、-gt-gt-、-1-gt-、-2-gt-、-1-gt-gt-、-2-gt-gt-、-lt"><a href="#linux-命令重定向-gt-、-gt-gt-、-1-gt-、-2-gt-、-1-gt-gt-、-2-gt-gt-、-lt" class="headerlink" title="linux 命令重定向&gt;、&gt;&gt;、 1&gt;、 2&gt;、 1&gt;&gt;、 2&gt;&gt;、 &lt;"></a>linux 命令重定向&gt;、&gt;&gt;、 1&gt;、 2&gt;、 1&gt;&gt;、 2&gt;&gt;、 &lt;</h2><h3 id="gt-和-gt-gt-："><a href="#gt-和-gt-gt-：" class="headerlink" title="&gt;和&gt;&gt;："></a>&gt;和&gt;&gt;：</h3><p>他们俩其实唯一的区别就是&gt;是重定向到一个文件，&gt;&gt;是追加内容到文件。两个命令都是如果文件不存在则创建文件</p>
+<h3 id="1-gt-、-2-gt-、-1-gt-gt-、-2-gt-gt"><a href="#1-gt-、-2-gt-、-1-gt-gt-、-2-gt-gt" class="headerlink" title="1&gt;、 2&gt;、 1&gt;&gt;、 2&gt;&gt;"></a>1&gt;、 2&gt;、 1&gt;&gt;、 2&gt;&gt;</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python pp.py 1&gt; right.txt 2&gt; wrong.txt</span><br></pre></td></tr></table></figure>
+
+<h3 id="让错误和正确的结果都被重定向到同一个文件"><a href="#让错误和正确的结果都被重定向到同一个文件" class="headerlink" title="让错误和正确的结果都被重定向到同一个文件"></a>让错误和正确的结果都被重定向到同一个文件</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">python pp.py 1&gt; ppp.txt 2&gt;&amp;1</span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="comment">#追加</span></span></span><br><span class="line">python pp.py 1&gt;&gt; pp.txt 2&gt;&amp;1</span><br></pre></td></tr></table></figure>
+
+<h3 id="保存正确，错误不保存"><a href="#保存正确，错误不保存" class="headerlink" title="保存正确，错误不保存"></a>保存正确，错误不保存</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python pp.py 1&gt;&gt;right.txt 2&gt;&#x2F;dev&#x2F;null</span><br></pre></td></tr></table></figure>
+
+<h3 id="lt"><a href="#lt" class="headerlink" title="&lt;"></a>&lt;</h3><p>那么&lt;又是什么意思呢？&lt;可以将原本由标准输入改为由指定地方输入举个例子就明白了：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vi hh</span><br><span class="line"><span class="meta">&gt;</span><span class="bash">&gt; txt.py &lt; hh</span></span><br><span class="line">cat txt.py</span><br><span class="line">qwejqwoijeoq</span><br></pre></td></tr></table></figure>
+
+<h2 id="获取进程-PID"><a href="#获取进程-PID" class="headerlink" title="获取进程 PID"></a>获取进程 PID</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pid=$(ps -ef | grep name | grep -v grep | awk <span class="string">'&#123;print $2&#125;'</span>)</span><br><span class="line"></span><br><span class="line">pid=$(ps x | awk <span class="string">'/[n]ame/&#123;print $1&#125;'</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="查看指定进程是否存在"><a href="#查看指定进程是否存在" class="headerlink" title="查看指定进程是否存在"></a>查看指定进程是否存在</h2><p>在获取到 pid 之后，还可以根据 pid 查看对应的进程是否存在（运行），这个方法也可以用于 kill 指定的进程。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if ps -p $PID &gt; /dev/null</span><br><span class="line">then</span><br><span class="line">   echo "$PID is running"</span><br><span class="line"><span class="meta">   #</span><span class="bash"> Do something knowing the pid exists, i.e. the process with <span class="variable">$PID</span> is running</span></span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
+
+<h2 id="双向重定向-tee-命令"><a href="#双向重定向-tee-命令" class="headerlink" title="双向重定向 tee 命令"></a>双向重定向 tee 命令</h2><p>既输出到屏幕，也输出文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">tee</span><br><span class="line"><span class="meta">#</span><span class="bash">-a 追加模式</span></span><br><span class="line">last |tee last.file|cut -d " " -f1</span><br></pre></td></tr></table></figure>
+
+<h2 id="tr-col-join-paste-expand"><a href="#tr-col-join-paste-expand" class="headerlink" title="tr col join paste expand"></a>tr col join paste expand</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">tr [-ds] Setstring...</span><br><span class="line"><span class="meta">#</span><span class="bash">-d删除信息中Setstring这个字符串</span></span><br><span class="line"><span class="meta">#</span><span class="bash">-s替换信息中Ssetstring这个字符串</span></span><br><span class="line"></span><br><span class="line">col [-xb]</span><br><span class="line"><span class="meta">#</span><span class="bash">-x 将tab键转换成对等的空格键</span></span><br><span class="line"><span class="meta">#</span><span class="bash">-b 在文字中有反斜杠（/）时，仅保留反斜杠最后接的那个字符</span></span><br><span class="line"></span><br><span class="line">join -[ti12] file1 file2</span><br><span class="line"><span class="meta">#</span><span class="bash">-i忽略大小写</span></span><br><span class="line"><span class="meta">#</span><span class="bash">-t join默认以空格为分隔符，并且比对第一个字段的数据，如果两个文件相同，则将两条数据连成一行，且第一个字段放在第一个</span></span><br><span class="line"><span class="meta">#</span><span class="bash">-1 第一个文件使用哪个字段来分析</span></span><br><span class="line"><span class="meta">#</span><span class="bash">-2 第二个文件使用哪个字段来分析</span></span><br><span class="line"></span><br><span class="line">expand [-t] file #将tab转换为空格</span><br><span class="line"><span class="meta">#</span><span class="bash">-t 后面可以接数字，一般来说一个tab可以用8个空格替换，也可以自己定义</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="查看内存"><a href="#查看内存" class="headerlink" title="查看内存"></a>查看内存</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /proc/meminfo</span><br></pre></td></tr></table></figure>
+
+<p>进程的内存使用信息也可以通过<code>/proc/&lt;pid&gt;/statm</code>和 <code>/proc/&lt;pid&gt;/status</code>来查看</p>
+<h2 id="输出文件的指定行数"><a href="#输出文件的指定行数" class="headerlink" title="输出文件的指定行数"></a>输出文件的指定行数</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">显示最后1000行</span></span><br><span class="line">tail -n 1000</span><br><span class="line"><span class="meta">#</span><span class="bash">从1000行开始显示，显示1000行以后的</span></span><br><span class="line">tail -n +1000</span><br><span class="line"><span class="meta">#</span><span class="bash">显示前面1000行</span></span><br><span class="line">head -n 1000</span><br><span class="line"><span class="meta">#</span><span class="bash">显示file文件中匹配foo字符串那行以及上下5行</span></span><br><span class="line">grep -C 5 foo filename</span><br><span class="line"><span class="meta">#</span><span class="bash">显示foo及前5行</span></span><br><span class="line">grep -B 5 foo filename</span><br><span class="line"><span class="meta">#</span><span class="bash">显示foo及后5行</span></span><br><span class="line">grep -A 5 foo filename</span><br><span class="line"><span class="meta">#</span><span class="bash">这样你就可以只查看文件的第5行到第10行</span></span><br><span class="line">sed -n '5,10p' filename</span><br></pre></td></tr></table></figure>
+
+<h2 id="sed-命令"><a href="#sed-命令" class="headerlink" title="sed 命令"></a>sed 命令</h2><p>sed 遵循简单的工作流：读取（从输入中读取某一行），执行（在某一行上执行 sed 命令）和显示（把结果显示在输出中）。</p>
+<p>sed 以一个长流的方式处理多个输入文件。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">-i可以编辑原文件并将替换结果打印到标准输出</span></span><br><span class="line">sed -i "s/hello/world/" input.txt</span><br><span class="line"><span class="meta">#</span><span class="bash">删除空白行</span></span><br><span class="line">sed '/^$/d' test.txt</span><br><span class="line"><span class="meta">#</span><span class="bash">删除文件的第二行</span></span><br><span class="line">sed '2d' test.txt</span><br><span class="line"><span class="meta">#</span><span class="bash">删除文件的第二行到最后一行</span></span><br><span class="line">sed '2,$d' test.txt</span><br><span class="line"><span class="meta">#</span><span class="bash">从文件读入：r命令</span></span><br><span class="line"><span class="meta">#</span><span class="bash">file里的内容被读进来，显示在与<span class="built_in">test</span>匹配的行后面，如果匹配多行，则file的内容将显示在所有匹配行的下面：</span></span><br><span class="line">sed '/my/r test1.txt' test.txt</span><br><span class="line"><span class="meta">#</span><span class="bash">写入文件：w命令</span></span><br><span class="line">sed -n '/my/w test2.txt' test.txt</span><br><span class="line"><span class="meta">#</span><span class="bash">打印奇数行或偶数行</span></span><br><span class="line"><span class="meta">#</span><span class="bash">奇数</span></span><br><span class="line">sed -n 'p;n' test.txt</span><br><span class="line"><span class="meta">#</span><span class="bash">偶数</span></span><br><span class="line">sed -n 'n;p' test.txt</span><br></pre></td></tr></table></figure>
+
+<h2 id="seq-命令"><a href="#seq-命令" class="headerlink" title="seq 命令"></a>seq 命令</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">用于产生从某个数到另外一个数之间的所有整数</span></span><br><span class="line">seq 1 10</span><br><span class="line"><span class="meta">#</span><span class="bash">结果是1 2 3 4 5 6 7 8 9 10</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="lsb-release-a"><a href="#lsb-release-a" class="headerlink" title="lsb_release -a"></a>lsb_release -a</h2><p>显示内核等信息</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@ecs-4f53 tests]# lsb_release -a</span><br><span class="line">LSB Version:    :core-4.1-amd64:core-4.1-noarch</span><br><span class="line">Distributor ID: CentOS</span><br><span class="line">Description:    CentOS Linux release 7.6.1810 (Core)</span><br><span class="line">Release:        7.6.1810</span><br><span class="line">Codename:       Core</span><br></pre></td></tr></table></figure>
+
+<h2 id="more-less"><a href="#more-less" class="headerlink" title="more less"></a>more less</h2><p>more 命令</p>
+<ul>
+<li>空格键（SPACE）：向下翻一页</li>
+<li>Enter ：向下滚一行</li>
+<li>/字符串 ：向下查询该字符串</li>
+<li>:f ：立刻显示出文件名和目前显示的行数</li>
+<li>q ：退出 more</li>
+<li>b ：往前翻页，只对文件有效对管道无效</li>
+</ul>
+<p>less 命令</p>
+<ul>
+<li>空格键 ： 向下翻一页</li>
+<li>PageDown ：向下翻一页</li>
+<li>PageUp ：向上翻一页</li>
+<li>/字符串 ：向下查询字符串</li>
+<li>?字符串 ：向上查询字符串</li>
+<li>q ：退出</li>
+</ul>
+<h2 id="find-locate-whereis"><a href="#find-locate-whereis" class="headerlink" title="find locate whereis"></a>find locate whereis</h2><p>find 是直接查询硬盘，所以耗时比较久，locate 和 whereis 都是查询数据库，而 linux 的数据库更新一般是一天一更<br>当然也可以使用手动强更 updatedb，而 locate 是模糊搜索，只要完整的文件名（包含路径名称）中含有单词即可查询到</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">locate</span><br><span class="line">-i: 忽略大小写的诧异</span><br><span class="line">-r:后面可接正则表达式的显示方式</span><br><span class="line">find</span><br><span class="line">1,-atime,-ctime,-mtime</span><br><span class="line">-mtime n #在n天内之前的“一天内”被修改过的文件</span><br><span class="line">-mtime +n #列出在n天之前（不含n天本身）被修改过的文件名；</span><br><span class="line">-mtime -n #列出在n天之内（含n天本身）被修改过的文件名</span><br><span class="line">-newer file #file为一个存在的文件，列出比file还要新的文件名</span><br><span class="line">find / -mtime 0 # 将/下在24小时内有改动的文件列出</span><br><span class="line">find /etc -newer /etc/passwd #寻找/etc下比/etc/passwd文件更新的文件</span><br><span class="line">2,与用户或用户组有关的参数</span><br><span class="line">-uid n #n为数字，用户的UID</span><br><span class="line">-gid n #n为数字，用户组的GID</span><br><span class="line">-user name #name为用户账号名称</span><br><span class="line">-group name #name为用户组名</span><br><span class="line">-nouser #寻找文件的所有者不存在于/etc/passwd的人</span><br><span class="line">-nogroup #寻找文件的所有用户组不存在于/etc/group的文件</span><br><span class="line">find / -nouser</span><br><span class="line">find /home -user vbird</span><br><span class="line">3,跟文件权限有关的参数</span><br><span class="line">4,其它可进行的操作</span><br><span class="line">-exec command</span><br><span class="line">-print #默认</span><br><span class="line">find / -size +1000k #查找系统中大于1MB的文件</span><br><span class="line">find / -perm +7000 -exec ls -l &#123;&#125; \;#查找文件中含有SGID或SUID或SBIT的属性 并列出权限</span><br></pre></td></tr></table></figure>
+
+<h1 id="软连接和硬连接"><a href="#软连接和硬连接" class="headerlink" title="软连接和硬连接"></a>软连接和硬连接</h1><p>硬连接，通过文件系统的 inode 连接来产生新的文件名，而不是产生新的文件。</p>
+<p><code>ln</code></p>
+<p>生成一个新的文件名，新的文件名的 block 可以指向 real 文件，然后取 real 文件的 inode 从而得到文件的实际内容<br>例如，1 和 2 都是文件名，1 和 2 的 block 指向 real，real 的 inode 指向实际内容</p>
+<p>作用就是安全，删除任意一个“文件名”，实际文件都还存在</p>
+<p>软连接<br><code>ln -s</code></p>
+<p>例如，文件 1 是文件名，2 是软连接，2 的 block 指向 1，而 1 的指向 real，real 指向实际的文件内容</p>
+<h1 id="Other"><a href="#Other" class="headerlink" title="Other"></a>Other</h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">pid=$(ps -ef | grep "sssj" | grep -v grep | awk '&#123;print $2&#125;')</span><br><span class="line"></span><br><span class="line">kill -2 $pid</span><br><span class="line"></span><br><span class="line">ps aux|grep sssjserver</span><br><span class="line"></span><br><span class="line">./build.sh</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"></span><br><span class="line">svn up</span><br><span class="line">WORK_DIR=<span class="variable">$PWD</span></span><br><span class="line">OUTPUT_DIR=<span class="variable">$WORK_DIR</span><span class="string">"/bin"</span></span><br><span class="line"><span class="built_in">export</span> GOPATH=<span class="variable">$WORK_DIR</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$GOPATH</span></span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$OUTPUT_DIR</span></span><br><span class="line"></span><br><span class="line">ls -lrt <span class="variable">$OUTPUT_DIR</span></span><br><span class="line"></span><br><span class="line">go build -o <span class="variable">$OUTPUT_DIR</span>/server server</span><br><span class="line">go build -o <span class="variable">$OUTPUT_DIR</span>/login login</span><br><span class="line">go build -o <span class="variable">$OUTPUT_DIR</span>/recharge recharge</span><br><span class="line">go build -o <span class="variable">$OUTPUT_DIR</span>/world world</span><br><span class="line"></span><br><span class="line">ls -lrt <span class="variable">$OUTPUT_DIR</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="start-sh"><a href="#start-sh" class="headerlink" title="./start.sh"></a>./start.sh</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">nohup ./sssjserver  &amp;</span><br><span class="line"></span><br><span class="line">ps aux|grep sssjserver</span><br></pre></td></tr></table></figure>
+
+<h3 id="svnupdata-sh"><a href="#svnupdata-sh" class="headerlink" title="./svnupdata.sh"></a>./svnupdata.sh</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line">cd gamedata</span><br><span class="line">rm ./*.txt</span><br><span class="line"></span><br><span class="line">svn up</span><br><span class="line">cd map</span><br><span class="line">rm ./*.json</span><br><span class="line">svn up</span><br><span class="line">cd ..</span><br><span class="line">cd ..</span><br><span class="line"><span class="meta">#</span><span class="bash">svn up gamedata</span></span><br><span class="line"></span><br><span class="line">./stop.sh &amp;</span><br><span class="line">sleep 2s</span><br><span class="line">./start.sh &amp;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Nginx-配置"><a href="#Nginx-配置" class="headerlink" title="Nginx 配置"></a>Nginx 配置</h2><ul>
+<li>nginx.conf</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">  For more information on configuration, see:</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   * Official English Documentation: http://nginx.org/en/docs/</span></span><br><span class="line"><span class="meta">#</span><span class="bash">   * Official Russian Documentation: http://nginx.org/ru/docs/</span></span><br><span class="line"></span><br><span class="line">user nginx;</span><br><span class="line">worker_processes auto;</span><br><span class="line"><span class="meta">#</span><span class="bash">error_log /var/<span class="built_in">log</span>/nginx/error.log;</span></span><br><span class="line">pid /var/run/nginx.pid;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> Load dynamic modules. See /usr/share/nginx/README.dynamic.</span></span><br><span class="line">include /usr/share/nginx/modules/*.conf;</span><br><span class="line"></span><br><span class="line">events &#123;</span><br><span class="line">    worker_connections  1024;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">http &#123;</span><br><span class="line">    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '</span><br><span class="line">                      '$status $body_bytes_sent "$http_referer" '</span><br><span class="line">                      '"$http_user_agent" "$http_x_forwarded_for"';</span><br><span class="line"></span><br><span class="line">    #access_log  /var/log/nginx/access.log  main;</span><br><span class="line"></span><br><span class="line">    sendfile            on;</span><br><span class="line">    tcp_nopush          on;</span><br><span class="line">    tcp_nodelay         on;</span><br><span class="line">    keepalive_timeout   65;</span><br><span class="line">    types_hash_max_size 2048;</span><br><span class="line"></span><br><span class="line">    include             /etc/nginx/mime.types;</span><br><span class="line">    default_type        application/octet-stream;</span><br><span class="line"></span><br><span class="line">        gzip on;</span><br><span class="line">    gzip_min_length 1k;</span><br><span class="line">    gzip_buffers 4 16k;</span><br><span class="line">    gzip_http_version 1.0;</span><br><span class="line">    gzip_comp_level 1;</span><br><span class="line">    gzip_types    text/css text/plain image/jpeg image/png image/x-icon application/json application/javascript audio/mpeg;</span><br><span class="line">    gzip_vary on;</span><br><span class="line">        gzip_static on;</span><br><span class="line">    gzip_disable "MSIE [1-6]\.";</span><br><span class="line"></span><br><span class="line">    add_header Access-Control-Allow-Origin *;</span><br><span class="line">        add_header Access-Control-Allow-Headers X-Requested-With;</span><br><span class="line">        add_header Access-Control-Allow-Methods GET,POST,OPTIONS;</span><br><span class="line"></span><br><span class="line">    # Load modular configuration files from the /etc/nginx/conf.d directory.</span><br><span class="line">    # See http://nginx.org/en/docs/ngx_core_module.html#include</span><br><span class="line">    # for more information.</span><br><span class="line">    #include /etc/nginx/conf.d/*.conf;</span><br><span class="line">        include /etc/nginx/conf.d/default.conf;</span><br><span class="line">    include /etc/nginx/conf.d/upstream.conf;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>conf.d/default.conf</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> The default server</span></span><br><span class="line"><span class="meta">#</span></span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">        listen       80;</span><br><span class="line">        listen       443  ssl;</span><br><span class="line">        server_name  _;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    ssl_certificate             /etc/nginx/conf.d/xxxxx.crt;</span><br><span class="line">    ssl_certificate_key         /etc/nginx/conf.d/xxxx.key;</span><br><span class="line">    ssl_session_timeout 5m;</span><br><span class="line">    ssl_session_cache shared:SSL:50m;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    ssl_protocols SSLv3 SSLv2 TLSv1 TLSv1.1 TLSv1.2;</span><br><span class="line">    ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP;</span><br><span class="line">    underscores_in_headers on;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    location / &#123;</span><br><span class="line">                root   /sssj/client;</span><br><span class="line">        index  index.html index.htm;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    error_page 404 /404.html;</span><br><span class="line">        location = /40x.html &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    error_page 500 502 503 504 /50x.html;</span><br><span class="line">        location = /50x.html &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">        include /etc/nginx/conf.d/location.conf;</span><br><span class="line">        include /etc/nginx/conf.d/pay.conf;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>conf.d/location.conf</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">location /30010 &#123;proxy_pass http://port_30010; proxy_http_version 1.1; proxy_set_header Upgrade <span class="variable">$http_upgrade</span>; proxy_set_header Connection <span class="string">"Upgrade"</span>;&#125;</span><br><span class="line">location /30101 &#123;proxy_pass http://port_30101; proxy_http_version 1.1; proxy_set_header Upgrade <span class="variable">$http_upgrade</span>; proxy_set_header Connection <span class="string">"Upgrade"</span>;&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>conf.d/upstream.conf</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">upstream port_30010 &#123; server 127.0.0.1:30010;&#125;</span><br><span class="line">upstream port_30101 &#123; server 127.0.0.1:30101;&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>conf.d/pay.conf</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">location /XXX_pay/YYY                 &#123;proxy_pass http://127.0.0.1:30020/YYY;&#125;</span><br><span class="line">location /XXX_pay/ZZZ                 &#123;proxy_pass http://127.0.0.1:30020/ZZZ;&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/06/26/Algorithm/Tree/" rel="prev" title="Tree">
+      <i class="fa fa-chevron-left"></i> Tree
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/06/26/Other/JinZhiZhuanHuan/" rel="next" title="JinZhiZhuanHuan">
+      JinZhiZhuanHuan <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#常用命令"><span class="nav-number">1.</span> <span class="nav-text">常用命令</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#linux-命令重定向-gt-、-gt-gt-、-1-gt-、-2-gt-、-1-gt-gt-、-2-gt-gt-、-lt"><span class="nav-number">1.1.</span> <span class="nav-text">linux 命令重定向&gt;、&gt;&gt;、 1&gt;、 2&gt;、 1&gt;&gt;、 2&gt;&gt;、 &lt;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#gt-和-gt-gt-："><span class="nav-number">1.1.1.</span> <span class="nav-text">&gt;和&gt;&gt;：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-gt-、-2-gt-、-1-gt-gt-、-2-gt-gt"><span class="nav-number">1.1.2.</span> <span class="nav-text">1&gt;、 2&gt;、 1&gt;&gt;、 2&gt;&gt;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#让错误和正确的结果都被重定向到同一个文件"><span class="nav-number">1.1.3.</span> <span class="nav-text">让错误和正确的结果都被重定向到同一个文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#保存正确，错误不保存"><span class="nav-number">1.1.4.</span> <span class="nav-text">保存正确，错误不保存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#lt"><span class="nav-number">1.1.5.</span> <span class="nav-text">&lt;</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#获取进程-PID"><span class="nav-number">1.2.</span> <span class="nav-text">获取进程 PID</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#查看指定进程是否存在"><span class="nav-number">1.3.</span> <span class="nav-text">查看指定进程是否存在</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#双向重定向-tee-命令"><span class="nav-number">1.4.</span> <span class="nav-text">双向重定向 tee 命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#tr-col-join-paste-expand"><span class="nav-number">1.5.</span> <span class="nav-text">tr col join paste expand</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#查看内存"><span class="nav-number">1.6.</span> <span class="nav-text">查看内存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#输出文件的指定行数"><span class="nav-number">1.7.</span> <span class="nav-text">输出文件的指定行数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sed-命令"><span class="nav-number">1.8.</span> <span class="nav-text">sed 命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#seq-命令"><span class="nav-number">1.9.</span> <span class="nav-text">seq 命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#lsb-release-a"><span class="nav-number">1.10.</span> <span class="nav-text">lsb_release -a</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#more-less"><span class="nav-number">1.11.</span> <span class="nav-text">more less</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#find-locate-whereis"><span class="nav-number">1.12.</span> <span class="nav-text">find locate whereis</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#软连接和硬连接"><span class="nav-number">2.</span> <span class="nav-text">软连接和硬连接</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Other"><span class="nav-number">3.</span> <span class="nav-text">Other</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#start-sh"><span class="nav-number">3.0.1.</span> <span class="nav-text">.&#x2F;start.sh</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#svnupdata-sh"><span class="nav-number">3.0.2.</span> <span class="nav-text">.&#x2F;svnupdata.sh</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Nginx-配置"><span class="nav-number">3.1.</span> <span class="nav-text">Nginx 配置</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Hei"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Hei</p>
+  <div class="site-description" itemprop="description">心里有梦，眼里有光</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/hei6775" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;hei6775" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/8523015/hey6775" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;8523015&#x2F;hey6775" rel="noopener" target="_blank"><i class="fab fa-stack-overflow fa-fw"></i>StackOverflow</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Hei</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

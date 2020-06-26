@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="A Star 算法，实际上是一个寻路算法，常用于游戏的寻找路径，我们通常也称其为 A 星算法。当然啦，我只是在看算法的时候，被领导叫去看这个算法的。乍看之下蛮简单的，实现起来，考虑的可能会稍微多那么一点点东西。 主要参考： 1、博客园莫水千流的A 星寻路算法介绍 2、博客园我爱我家喵喵的UnityA-Star(A 星)寻路算法 通过阅读可以发现，A 星算法原理并不难，主要步骤如下：1、设置起点、终">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AStar">
+<meta property="og:url" content="http://yoursite.com/2020/06/26/Other/AStar/index.html">
+<meta property="og:site_name" content="hei">
+<meta property="og:description" content="A Star 算法，实际上是一个寻路算法，常用于游戏的寻找路径，我们通常也称其为 A 星算法。当然啦，我只是在看算法的时候，被领导叫去看这个算法的。乍看之下蛮简单的，实现起来，考虑的可能会稍微多那么一点点东西。 主要参考： 1、博客园莫水千流的A 星寻路算法介绍 2、博客园我爱我家喵喵的UnityA-Star(A 星)寻路算法 通过阅读可以发现，A 星算法原理并不难，主要步骤如下：1、设置起点、终">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://yoursite.com/2020/06/26/Other/AStar/123.png">
+<meta property="article:published_time" content="2020-06-26T07:16:28.000Z">
+<meta property="article:modified_time" content="2020-06-26T07:18:25.762Z">
+<meta property="article:author" content="Hei">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2020/06/26/Other/AStar/123.png">
+
+<link rel="canonical" href="http://yoursite.com/2020/06/26/Other/AStar/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>AStar | hei</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">hei</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/26/Other/AStar/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Hei">
+      <meta itemprop="description" content="心里有梦，眼里有光">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="hei">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AStar
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-06-26 15:16:28 / 修改时间：15:18:25" itemprop="dateCreated datePublished" datetime="2020-06-26T15:16:28+08:00">2020-06-26</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>A Star 算法，实际上是一个寻路算法，常用于游戏的寻找路径，我们通常也称其为 A 星算法。当然啦<br>，我只是在看算法的时候，被领导叫去看这个算法的。乍看之下蛮简单的，实现起来，考虑的可能<br>会稍微多那么一点点东西。</p>
+<p>主要参考：</p>
+<p>1、博客园莫水千流的<a href="https://www.cnblogs.com/zhoug2020/p/3468167.html" target="_blank" rel="noopener">A 星寻路算法介绍</a></p>
+<p>2、博客园我爱我家喵喵的<a href="https://www.cnblogs.com/yangyxd/articles/5447889.html" target="_blank" rel="noopener">UnityA-Star(A 星)寻路算法</a></p>
+<p>通过阅读可以发现，A 星算法原理并不难，主要步骤如下：<br>1、设置起点、终点<br>2、需要两张表，open 表用来存储被考虑的点，close 表用来存储障碍点<br>3、从起点开始，计算以起点为中心的 F 量，选择最小的 F 量，不断循环<br>4、直到找到终点，然后再返回该路径。</p>
+<p>G 量：是衡量行走的难度的计算，通常为了计算方便，走上下左右用 10 来表示，走斜对角用 14 来表示，其实也是勾股定理计算的出的。</p>
+<p>H 量：是衡量该点到终点的距离，对于 H 量通常有三种计算方法，分别是：</p>
+<p><img src="/2020/06/26/Other/AStar/123.png" alt="123.png"></p>
+<p>曼哈顿算法（Manhattan Heuristic）：笔直的计算代价，不走对角线，也就是计算（x1-x0）+(y1-y0)</p>
+<p>几何算法（Euclidean Heuristic）：通过勾股定理计算该点到终点的斜边距离</p>
+<p>对角算法（Diagonal Heuristic）：先走对角，直到与终点垂直或者平行再走直线，算法中也就是通过比较 X 和 Y 的那个距离短，距离短的做走直角。</p>
+<hr>
+<p>本文用 golang 实现，才用的是最小堆结构，来保证每次弹出的点都是 F 量最小的点。</p>
+<p>使用 container/heap 来保证实现，但是使用 container/heap 需要实现五个接口</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//heap Interface</span></span><br><span class="line"><span class="keyword">type</span> Interface <span class="keyword">interface</span> &#123;</span><br><span class="line">    sort.Interface</span><br><span class="line">    Push(x <span class="keyword">interface</span>&#123;&#125;) <span class="comment">// 向末尾添加元素</span></span><br><span class="line">    Pop() <span class="keyword">interface</span>&#123;&#125;   <span class="comment">// 从末尾删除元素</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//sort.Interface</span></span><br><span class="line"><span class="keyword">type</span> Interface <span class="keyword">interface</span> &#123;</span><br><span class="line">    <span class="comment">// Len方法返回集合中的元素个数</span></span><br><span class="line">    Len() <span class="keyword">int</span></span><br><span class="line">    <span class="comment">// Less方法报告索引i的元素是否比索引j的元素小</span></span><br><span class="line">    Less(i, j <span class="keyword">int</span>) <span class="keyword">bool</span></span><br><span class="line">    <span class="comment">// Swap方法交换索引i和j的两个元素</span></span><br><span class="line">    Swap(i, j <span class="keyword">int</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>需要实现这五个接口，才能调用 heap 中的函数。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/06/26/System/System/" rel="prev" title="System">
+      <i class="fa fa-chevron-left"></i> System
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/06/26/Algorithm/Algorithm/" rel="next" title="Algorithm">
+      Algorithm <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Hei"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Hei</p>
+  <div class="site-description" itemprop="description">心里有梦，眼里有光</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/hei6775" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;hei6775" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/8523015/hey6775" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;8523015&#x2F;hey6775" rel="noopener" target="_blank"><i class="fab fa-stack-overflow fa-fw"></i>StackOverflow</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Hei</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Copying Interface Values In GoWilliam KennedyMay 5, 2016  原文地址 ：Copying Interface Values In Go 我一直在思考 Go 语言以及它是如何工作的。最近我一直在思考 Go 中的一切都是值（value）。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GoCopyingInterfaceValues">
+<meta property="og:url" content="http://yoursite.com/2020/06/25/Go/Translation/GoCopyingInterfaceValues/index.html">
+<meta property="og:site_name" content="hei">
+<meta property="og:description" content="Copying Interface Values In GoWilliam KennedyMay 5, 2016  原文地址 ：Copying Interface Values In Go 我一直在思考 Go 语言以及它是如何工作的。最近我一直在思考 Go 中的一切都是值（value）。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://yoursite.com/2020/06/25/Go/Translation/GoCopyingInterfaceValues/69_figure1.png">
+<meta property="og:image" content="http://yoursite.com/2020/06/25/Go/Translation/GoCopyingInterfaceValues/69_figure2.png">
+<meta property="og:image" content="http://yoursite.com/2020/06/25/Go/Translation/GoCopyingInterfaceValues/69_figure3.png">
+<meta property="article:published_time" content="2020-06-25T14:22:15.000Z">
+<meta property="article:modified_time" content="2020-06-26T07:00:01.263Z">
+<meta property="article:author" content="Hei">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2020/06/25/Go/Translation/GoCopyingInterfaceValues/69_figure1.png">
+
+<link rel="canonical" href="http://yoursite.com/2020/06/25/Go/Translation/GoCopyingInterfaceValues/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>GoCopyingInterfaceValues | hei</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">hei</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/25/Go/Translation/GoCopyingInterfaceValues/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Hei">
+      <meta itemprop="description" content="心里有梦，眼里有光">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="hei">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          GoCopyingInterfaceValues
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-06-25 22:22:15" itemprop="dateCreated datePublished" datetime="2020-06-25T22:22:15+08:00">2020-06-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-06-26 15:00:01" itemprop="dateModified" datetime="2020-06-26T15:00:01+08:00">2020-06-26</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Copying-Interface-Values-In-Go"><a href="#Copying-Interface-Values-In-Go" class="headerlink" title="Copying Interface Values In Go"></a>Copying Interface Values In Go</h1><p align="right">William KennedyMay 5, 2016</p>
+
+<p>原文地址 ：<a href="https://www.ardanlabs.com/blog/2016/05/copying-interface-values-in-go.html" target="_blank" rel="noopener">Copying Interface Values In Go</a></p>
+<p>我一直在思考 Go 语言以及它是如何工作的。<br>最近我一直在思考 Go 中的一切都是值（<code>value</code>）。</p>
+<a id="more"></a>
+
+<p>当我们将值传递给函数，迭代切片和执行类型断言时，我们会看到这一点。<br>在每种情况下，都会返回存储在这些数据结构中的值的副本。<br>当我第一次开始学习 Go 时，这让我失望，但我开始意识到这给我们的代码带来了合理性。</p>
+<p>我开始疑问，当我复制一个<code>interface</code>的值，存储值而不是指针地址的时候发生了什么？<br>每个新的<code>interface</code>的值会获得自己的副本，还是会共享该值？<br>为了获得明确的答案，我写了一个小程序来检查<code>interface Value</code>。</p>
+<h2 id="Listing-1"><a href="#Listing-1" class="headerlink" title="Listing 1"></a>Listing 1</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">06 package main</span><br><span class="line">07</span><br><span class="line">08 import (</span><br><span class="line">09     &quot;fmt&quot;</span><br><span class="line">10     &quot;unsafe&quot;</span><br><span class="line">11 )</span><br><span class="line">12</span><br><span class="line">13 &#x2F;&#x2F; notifier provides support for notifying events.</span><br><span class="line">14 type notifier interface &#123;</span><br><span class="line">15     notify()</span><br><span class="line">16 &#125;</span><br><span class="line">17</span><br><span class="line">18 &#x2F;&#x2F; user represents a user in the system.</span><br><span class="line">19 type user struct&#123;</span><br><span class="line">20     name string</span><br><span class="line">21 &#125;</span><br><span class="line">22</span><br><span class="line">23 &#x2F;&#x2F; notify implements the notifier interface.</span><br><span class="line">24 func (u user) notify() &#123;</span><br><span class="line">25     fmt.Println(&quot;Alert&quot;, u.name)</span><br><span class="line">26 &#125;</span><br></pre></td></tr></table></figure>
+
+<p>在 Listing 1 中的第 14 行，我们看到了名为<code>notifier</code>的接口类型的声明，<br>其中包含一个名为<code>notify</code>的方法。<br>然后在第 19 行，我们有一个名为<code>user</code>的具体类型的声明，<br>在第 24 行有该<code>user</code>的<code>notify</code>程序接口的实现。<br>我们现在有一个接口和一个具体类型可以使用。</p>
+<h2 id="Listing-2"><a href="#Listing-2" class="headerlink" title="Listing 2"></a>Listing 2</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">28 &#x2F;&#x2F; inspect allows us to look at the value stored</span><br><span class="line">29 &#x2F;&#x2F; inside the interface value.</span><br><span class="line">30 func inspect(n *notifier, u *user) &#123;</span><br><span class="line">31     word :&#x3D; uintptr(unsafe.Pointer(n)) + uintptr(unsafe.Sizeof(&amp;u))</span><br><span class="line">32     value :&#x3D; (**user)(unsafe.Pointer(word))</span><br><span class="line">33     fmt.Printf(&quot;Addr User: %p  Word Value: %p  Ptr Value: %v\n&quot;, u, *value, **value)</span><br><span class="line">34 &#125;</span><br></pre></td></tr></table></figure>
+
+<p>在 Listing 2 中，我们有从第 30 行开始的 <code>inspect</code> 函数。<br>这个函数为我们提供了一个指向接口值第二个字段的指针。<br>使用此指针，我们可以检查接口的第二个字段的值以及第二个字段指向的用户值。<br>我们需要检查这些值以真正理解<code>interface</code>的机制。</p>
+<h2 id="Listing-3"><a href="#Listing-3" class="headerlink" title="Listing 3"></a>Listing 3</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">36 func main() &#123;</span><br><span class="line">37</span><br><span class="line">38     &#x2F;&#x2F; Create a notifier interface and concrete type value.</span><br><span class="line">39     var n1 notifier</span><br><span class="line">40     u :&#x3D; user&#123;&quot;bill&quot;&#125;</span><br><span class="line">41</span><br><span class="line">42     &#x2F;&#x2F; Store a copy of the user value inside the notifier</span><br><span class="line">43     &#x2F;&#x2F; interface value.</span><br><span class="line">44     n1 &#x3D; u</span><br><span class="line">45</span><br><span class="line">46     &#x2F;&#x2F; We see the interface has its own copy.</span><br><span class="line">47     &#x2F;&#x2F; Addr User: 0x1040a120  Word Value: 0x10427f70  Ptr Value: &#123;bill&#125;</span><br><span class="line">48     inspect(&amp;n1, &amp;u)</span><br><span class="line">49</span><br><span class="line">50     &#x2F;&#x2F; Make a copy of the interface value.</span><br><span class="line">51     n2 :&#x3D; n1</span><br><span class="line">52</span><br><span class="line">53     &#x2F;&#x2F; We see the interface is sharing the same value stored in</span><br><span class="line">54     &#x2F;&#x2F; the n1 interface value.</span><br><span class="line">55     &#x2F;&#x2F; Addr User: 0x1040a120  Word Value: 0x10427f70  Ptr Value: &#123;bill&#125;</span><br><span class="line">56     inspect(&amp;n2, &amp;u)</span><br><span class="line">57</span><br><span class="line">58     &#x2F;&#x2F; Store a copy of the user address value inside the</span><br><span class="line">59     &#x2F;&#x2F; notifier interface value.</span><br><span class="line">60     n1 &#x3D; &amp;u</span><br><span class="line">61</span><br><span class="line">62     &#x2F;&#x2F; We see the interface is sharing the u variables value</span><br><span class="line">63     &#x2F;&#x2F; directly. There is no copy.</span><br><span class="line">64     &#x2F;&#x2F; Addr User: 0x1040a120  Word Value: 0x1040a120  Ptr Value: &#123;bill&#125;</span><br><span class="line">65     inspect(&amp;n1, &amp;u)</span><br><span class="line">66 &#125;</span><br></pre></td></tr></table></figure>
+
+<p>Listing 3 显示了从第 36 行开始的 main 函数。<br>我们在第 39 行上做的第一件事就是将一个名为 n1 的接口类型<code>notifier</code>的变量声明为零值。<br>然后在第 40 行，我们声明一个名为<code>u</code>的变量，其类型为<code>user</code>设置其字符串为<code>bill</code>。</p>
+<h2 id="Listing-4"><a href="#Listing-4" class="headerlink" title="Listing 4"></a>Listing 4</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">42     &#x2F;&#x2F; Store a copy of the user value inside the notifier</span><br><span class="line">43     &#x2F;&#x2F; interface value.</span><br><span class="line">44     n1 &#x3D; u</span><br><span class="line">45</span><br><span class="line">46     &#x2F;&#x2F; We see the interface has its own copy.</span><br><span class="line">47     &#x2F;&#x2F; Addr User: 0x1040a120  Word Value: 0x10427f70  Ptr Value: &#123;bill&#125;</span><br><span class="line">48     inspect(&amp;n1, &amp;u)</span><br></pre></td></tr></table></figure>
+
+<h2 id="Figure-1"><a href="#Figure-1" class="headerlink" title="Figure 1:"></a>Figure 1:</h2><p>What the interface value looks like after the assignment of the user value.<br><img src="/2020/06/25/Go/Translation/GoCopyingInterfaceValues/69_figure1.png" alt="69_figure1.png"></p>
+<p>Figure 1 显示了赋值后<code>interface</code>的值<code>value</code>的结构内容。<br>我们看到<code>interface</code>中的值<code>value</code>有自己的已分配用户值的副本。<br>存储在<code>interfacce</code>中的<code>user</code>值的地址与最初的<code>user</code>值的地址是完全不同。</p>
+<p>我编写了这段代码，<br>以了解如果我将一个值而不是指针的值，赋值到<code>interface</code>中的时候发生了什么<br>这个新接口值是否也有自己的副本，或者值是否共享？</p>
+<h2 id="Listing-5"><a href="#Listing-5" class="headerlink" title="Listing 5"></a>Listing 5</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">50     &#x2F;&#x2F; Make a copy of the interface value.</span><br><span class="line">51     n2 :&#x3D; n1</span><br><span class="line">52</span><br><span class="line">53     &#x2F;&#x2F; We see the interface is sharing the same value stored in</span><br><span class="line">54     &#x2F;&#x2F; the n1 interface value.</span><br><span class="line">55     &#x2F;&#x2F; Addr User: 0x1040a120  Word Value: 0x10427f70  Ptr Value: &#123;bill&#125;</span><br><span class="line">56     inspect(&amp;n2, &amp;u)</span><br></pre></td></tr></table></figure>
+
+<h2 id="Figure-2"><a href="#Figure-2" class="headerlink" title="Figure 2:"></a>Figure 2:</h2><p>What both interface values look like after copying the interface value.<br><img src="/2020/06/25/Go/Translation/GoCopyingInterfaceValues/69_figure2.png" alt="69_figure2.png"></p>
+<p>Figure 2 为我们展示了答案。当我们 copy 一个值到<code>interface</code>中的时。<br>存储在<code>n1</code>内的<code>user</code>值现在与<code>n2</code>共享。每个接口值都没有获得自己的副本。它们都共享相同的用户值。</p>
+<h2 id="Listing-6"><a href="#Listing-6" class="headerlink" title="Listing 6"></a>Listing 6</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">58     &#x2F;&#x2F; Store a copy of the user address value inside the</span><br><span class="line">59     &#x2F;&#x2F; notifier interface value.</span><br><span class="line">60     n1 &#x3D; &amp;u</span><br><span class="line">61</span><br><span class="line">62     &#x2F;&#x2F; We see the interface is sharing the u variables value</span><br><span class="line">63     &#x2F;&#x2F; directly. There is no copy.</span><br><span class="line">64     &#x2F;&#x2F; Addr User: 0x1040a120  Word Value: 0x1040a120  Ptr Value: &#123;bill&#125;</span><br><span class="line">65     inspect(&amp;n1, &amp;u)</span><br></pre></td></tr></table></figure>
+
+<h2 id="Figure-3"><a href="#Figure-3" class="headerlink" title="Figure 3:"></a>Figure 3:</h2><p>What the interface value looks like after the assignment of the address.</p>
+<p><img src="/2020/06/25/Go/Translation/GoCopyingInterfaceValues/69_figure3.png" alt="69_figure3.png"></p>
+<p>在 Figure 3 中，我们看到接口现在指向 u 变量引用的用户值。u 变量的地址是存储在接口值的第二个字内的。这意味着接口值将看到与 u 变量关联的用户值的任何更改。</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>我允许自己对 Go 在进行存储值而不是指针的接口值的副本时会做什么感到困惑。有一分钟，我想知道接口值的每个副本是否也创建了接口引用的值的副本。因为我们“存储”一个值而不是一个指针。但我们学到的是，因为地址总是存储，所以它是被复制的地址，而不是值本身。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/06/23/protocol/netProtocol/" rel="prev" title="Net Protocol">
+      <i class="fa fa-chevron-left"></i> Net Protocol
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/06/25/Go/Translation/GoCommands/" rel="next" title="GoCommands">
+      GoCommands <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Copying-Interface-Values-In-Go"><span class="nav-number">1.</span> <span class="nav-text">Copying Interface Values In Go</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Listing-1"><span class="nav-number">1.1.</span> <span class="nav-text">Listing 1</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Listing-2"><span class="nav-number">1.2.</span> <span class="nav-text">Listing 2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Listing-3"><span class="nav-number">1.3.</span> <span class="nav-text">Listing 3</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Listing-4"><span class="nav-number">1.4.</span> <span class="nav-text">Listing 4</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Figure-1"><span class="nav-number">1.5.</span> <span class="nav-text">Figure 1:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Listing-5"><span class="nav-number">1.6.</span> <span class="nav-text">Listing 5</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Figure-2"><span class="nav-number">1.7.</span> <span class="nav-text">Figure 2:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Listing-6"><span class="nav-number">1.8.</span> <span class="nav-text">Listing 6</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Figure-3"><span class="nav-number">1.9.</span> <span class="nav-text">Figure 3:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Conclusion"><span class="nav-number">1.10.</span> <span class="nav-text">Conclusion</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Hei"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Hei</p>
+  <div class="site-description" itemprop="description">心里有梦，眼里有光</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/hei6775" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;hei6775" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/8523015/hey6775" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;8523015&#x2F;hey6775" rel="noopener" target="_blank"><i class="fab fa-stack-overflow fa-fw"></i>StackOverflow</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Hei</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

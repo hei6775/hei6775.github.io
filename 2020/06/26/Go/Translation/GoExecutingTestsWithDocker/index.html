@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Integration Testing in Go: Part I - Executing Tests with DockerAuthor: George ShawMarch 18, 2019  原文地址 ：Integration Testing in Go: Part I - Executing Tests with Docker Introduction“Testing leads to fa">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GoExecutingTestsWithDocker">
+<meta property="og:url" content="http://yoursite.com/2020/06/26/Go/Translation/GoExecutingTestsWithDocker/index.html">
+<meta property="og:site_name" content="hei">
+<meta property="og:description" content="Integration Testing in Go: Part I - Executing Tests with DockerAuthor: George ShawMarch 18, 2019  原文地址 ：Integration Testing in Go: Part I - Executing Tests with Docker Introduction“Testing leads to fa">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-06-26T06:17:53.000Z">
+<meta property="article:modified_time" content="2020-06-26T06:25:35.365Z">
+<meta property="article:author" content="Hei">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2020/06/26/Go/Translation/GoExecutingTestsWithDocker/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>GoExecutingTestsWithDocker | hei</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">hei</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/26/Go/Translation/GoExecutingTestsWithDocker/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Hei">
+      <meta itemprop="description" content="心里有梦，眼里有光">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="hei">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          GoExecutingTestsWithDocker
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-06-26 14:17:53 / 修改时间：14:25:35" itemprop="dateCreated datePublished" datetime="2020-06-26T14:17:53+08:00">2020-06-26</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Integration-Testing-in-Go-Part-I-Executing-Tests-with-Docker"><a href="#Integration-Testing-in-Go-Part-I-Executing-Tests-with-Docker" class="headerlink" title="Integration Testing in Go: Part I - Executing Tests with Docker"></a>Integration Testing in Go: Part I - Executing Tests with Docker</h1><p align="right">Author: George ShawMarch 18, 2019</p>
+
+<p>原文地址 ：<a href="https://www.ardanlabs.com/blog/2019/03/integration-testing-in-go-executing-tests-with-docker.html" target="_blank" rel="noopener">Integration Testing in Go: Part I - Executing Tests with Docker</a></p>
+<h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><p><strong>“Testing leads to failure, and failure leads to understanding.” - Burt Rutan</strong></p>
+<p>Burt Rutan 是一名航空航天工程师，他设计了 Voyager，这是第一架在不停车或加油的情况下环球飞行的飞机。<br>虽然 Rutan 不是软件工程师，但他的话充分说明了测试的重要性，甚至测试软件。<br>所有形式的测试软件都非常重要，无论是单元，集成，系统还是验收测试。<br>但是，根据项目，一种形式的测试可能比其他形式更有价值。<br>换句话说，有时一种形式的测试可以比其他形式更好地理解软件的健康和完整性。</p>
+<a id="more"></a>
+
+<p>在开发 Web 服务时，我相信一组强大的集成测试可以比其他类型的测试更好地理解服务。<br>集成测试是一种软件测试形式，用于测试代码与应用程序利用的依赖项（如数据库和消息传递系统）之间的交互。<br>如果没有集成测试，很难信任 Web 服务的端到端操作。<br>我相信这是真的，因为在 Web 服务中测试的各个代码单元很少提供与集成测试相同的洞察力。</p>
+<p>这是关于 Go 中集成测试的三部分系列的第一篇文章。<br>本系列中分享的想法，代码和流程旨在轻松扩展到您正在处理的 Web 服务项目。<br>在这篇文章中，<br>我将向您展示如何设置 Web 服务项目以使用 Docker 和 Docker Compose 在没有预先安装 Go 的限制性计算环境中运行 Go 测试和依赖项。</p>
+<h2 id="Why-use-Docker-and-Docker-Compose"><a href="#Why-use-Docker-and-Docker-Compose" class="headerlink" title="Why use Docker and Docker Compose"></a>Why use Docker and Docker Compose</h2><p>吸引许多开发人员使用 Docker 的方法是如何在主机上加载应用程序，而无需手动安装和管理它们。<br>这意味着您可以加载复杂的软件，包括但不限于数据库（例如 Postgres），消息传递系统（例如 Kafka）和监控系统（例如 Prometheus）。<br>所有这一切都是通过下载一组代表应用程序及其所有依赖项的镜像来完成的。</p>
+<p>注意：<a href="https://www.docker.com/resources/what-container" target="_blank" rel="noopener">有关容器的更多信息</a>，Docker 有一个专门用于定义容器的网页，并突出显示容器和虚拟机之间的差异和相似之处。</p>
+<p>Docker Compose 是一种编排工具，可帮助在一个沙箱内构建，运行和联网一组容器。<br>使用一个命令<code>docker-compose up</code>，您可以使 Docker Compose 文件变为现实。<br>在撰写文件中定义的所有服务将成为在其自己的网络沙箱中作为一个组运行的容器，并按配置运行<br>。这与手动构建，运行和联网每个容器形成对比，以便允许它们一起运行，相互通信并保留数据。</p>
+<p>注意：有关 Docker Compose 的更多信息，请访问网页以获取 Docker 官方网站上 Docker Compose 的概述。</p>
+<p>Docker 和 Docker Compose 的另一大好处是，它们有助于在将新开发人员引入项目时实现更轻松的过渡。<br>新开发人员只需执行一些 Docker 和 Docker Compose 命令即可开始使用，而不是有关于如何安装和管理开发环境的复杂文档。<br>如果在启动应用程序时主机上当前不存在所需的映像，Docker CLI 将负责下载所需的映像。</p>
+<h2 id="Using-Docker-and-Docker-Compose-to-Run-Tests"><a href="#Using-Docker-and-Docker-Compose-to-Run-Tests" class="headerlink" title="Using Docker and Docker Compose to Run Tests"></a>Using Docker and Docker Compose to Run Tests</h2><p>本系列中引用的 Web 服务应用程序使用 Postgres 数据库公开了一个简单的基于<code>CRUD</code>的<code>REST</code>风格的 API。<br>该项目使用 Docker 为生产和测试运行 Postgres 数据库。<br>此应用程序的测试需要能够在已安装 Go 的本地开发环境和 Go 不存在的受限环境中运行。</p>
+<p>以下<code>Docker Compose</code>文件支持在上面提到的两种环境中为项目运行集成测试的能力。在本节中，我将分解我选择的配置选项以及我选择它们的原因。</p>
+<h3 id="Listing-1"><a href="#Listing-1" class="headerlink" title="Listing 1"></a>Listing 1</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">version: &#39;3&#39;</span><br><span class="line"></span><br><span class="line">networks:</span><br><span class="line">  integration-tests-example-test:</span><br><span class="line">    driver: bridge</span><br><span class="line"></span><br><span class="line">services:</span><br><span class="line">  listd_tests:</span><br><span class="line">    build:</span><br><span class="line">      context: .</span><br><span class="line">      dockerfile: .&#x2F;cmd&#x2F;listd&#x2F;deploy&#x2F;Dockerfile.test</span><br><span class="line">    depends_on:</span><br><span class="line">      - db</span><br><span class="line">    networks:</span><br><span class="line">      - integration-tests-example-test</span><br><span class="line">  db:</span><br><span class="line">    image: postgres:11.1</span><br><span class="line">    ports:</span><br><span class="line">      - &quot;5432:5432&quot;</span><br><span class="line">    expose:</span><br><span class="line">      - &quot;5432&quot;</span><br><span class="line">    environment:</span><br><span class="line">      POSTGRES_USER: root</span><br><span class="line">      POSTGRES_PASSWORD: root</span><br><span class="line">      POSTGRES_DB: testdb</span><br><span class="line">    restart: on-failure</span><br><span class="line">    networks:</span><br><span class="line">      - integration-tests-example-test</span><br></pre></td></tr></table></figure>
+
+<p>在 Listing 1 中，您可以看到<code>Docker Compose</code>文件，<br>该文件定义了运行测试所需的项目服务。<br>此文件有三个主要属性：版本（<code>version</code>），网络（<code>networks</code>）和服务（<code>services</code>）。<br><code>version</code>属性定义了您正在使用的 Docker Compose 的版本。<br><code>networks</code>属性定义了可用于给定服务的一个或多个网络配置。<br><code>services</code>属性定义要启动的容器及其配置。</p>
+<h3 id="Listing-2"><a href="#Listing-2" class="headerlink" title="Listing 2"></a>Listing 2</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">networks:</span><br><span class="line">  integration-tests-example:</span><br><span class="line">    driver: bridge</span><br></pre></td></tr></table></figure>
+
+<p>通过将服务定义在一个<code>compose</code>文件中，<br>默认情况下它们会自动放置在同一网络中，<br>因此可以相互通信。<br>但是，与使用默认网络相比，为服务创建网络是最佳做法。<br>最上层的网络配置定义网络的名称及其使用的驱动程序，在这种情况下是桥接驱动程序。</p>
+<p>桥接驱动程序是<code>Docker</code>提供的默认驱动程序，<br>它为容器内部通信创建一个私有内部网络。<br>服务被告知在<code>compose</code>文件中的服务定义配置中使用创建的网络。</p>
+<h3 id="Listing-3"><a href="#Listing-3" class="headerlink" title="Listing 3"></a>Listing 3</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">services:</span><br><span class="line">  listd_tests:</span><br><span class="line">    build:</span><br><span class="line">      context: .</span><br><span class="line">      dockerfile: .&#x2F;cmd&#x2F;listd&#x2F;deploy&#x2F;Dockerfile.test</span><br><span class="line">&#x2F;&#x2F; ... omitted code…</span><br><span class="line">  db:</span><br><span class="line">&#x2F;&#x2F; ... omitted code…</span><br></pre></td></tr></table></figure>
+
+<p><code>services</code>属性有两个直接子属性，<code>listd_tests</code>和<code>db</code>。<code>listd_tests</code>容器通过指定<code>Dockerfile</code>来定义其镜像。<code>context</code>属性表示所有主机路径应该相对于当前工作目录，如 a<code>..</code>表示的那样。</p>
+<h3 id="Listing-4"><a href="#Listing-4" class="headerlink" title="Listing 4"></a>Listing 4</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">listd_tests:</span><br><span class="line">    build:</span><br><span class="line">      context: .</span><br><span class="line">      dockerfile: .&#x2F;cmd&#x2F;listd&#x2F;deploy&#x2F;Dockerfile.test</span><br><span class="line">    depends_on:</span><br><span class="line">      - db</span><br><span class="line">    volumes:</span><br><span class="line">      - $PWD:&#x2F;go&#x2F;src&#x2F;github.com&#x2F;george-e-shaw-iv&#x2F;integration-tests-example</span><br></pre></td></tr></table></figure>
+
+<p><code>depends_on</code>属性告诉<code>listd_tests</code>服务等待启动，直到<code>db</code>服务已经启动。<br>除了断言服务的启动顺序之外，此属性还将禁止<code>listd_tests</code>服务独立于 db 服务运行。<br><code>volumes</code>属性告诉 compose 将当前工作目录（由<code>$ PWD</code>（打印工作目录）表示）挂载到容器中的<code>/go/src/github.com/george-e-shaw-iv/integration-tests-example</code>，是代码将被定位和测试的地方。</p>
+<h3 id="Listing-5"><a href="#Listing-5" class="headerlink" title="Listing 5"></a>Listing 5</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">listd_tests:</span><br><span class="line">    build:</span><br><span class="line">      context: .</span><br><span class="line">      dockerfile: .&#x2F;cmd&#x2F;listd&#x2F;deploy&#x2F;Dockerfile.test</span><br><span class="line">    depends_on:</span><br><span class="line">      - db</span><br><span class="line">    networks:</span><br><span class="line">      - integration-tests-example-test</span><br></pre></td></tr></table></figure>
+
+<p>最后，该服务被赋予一个网络，以便在沙箱内运行时进行通信。这最初是在 Listing 2 中的顶级网络配置键中定义的。</p>
+<h3 id="Listing-6"><a href="#Listing-6" class="headerlink" title="Listing 6"></a>Listing 6</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">db:</span><br><span class="line">    image: postgres:11.1</span><br></pre></td></tr></table></figure>
+
+<p>下一个服务定义在 db 中的容器通过使用 Docker Hub 托管的映像定义其镜像，即<code>postgres：1.11</code> 镜像。如果 Docker Hub 镜像存储库无法在本地计算机上找到镜像，那么 Doc​​ker CLI 非常智能，可以查看它。</p>
+<h3 id="Listing-7"><a href="#Listing-7" class="headerlink" title="Listing 7"></a>Listing 7</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">db:</span><br><span class="line">    image: postgres:11.1</span><br><span class="line">    ports:</span><br><span class="line">      - &quot;5432:5432&quot;</span><br></pre></td></tr></table></figure>
+
+<p>出于安全原因，默认情况下，无法从主机访问任何容器端口。<br>在本地运行集成测试时，这被证明是一个问题，因为如果无法访问集成服务，那么它就毫无价值。<br><code>ports</code>属性以下列格式定义从主机到容器的端口映射：<code>“HOST_PORT：CONTAINER_PORT”</code>。<br>Listing 7 中的上述定义可确保计算机上的端口 5432 映射到<code>db</code>容器上的端口 5432，因为默认情况下，这是<code>Postgres</code>在容器中运行的端口。</p>
+<h3 id="Listing-8"><a href="#Listing-8" class="headerlink" title="Listing 8"></a>Listing 8</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">db:</span><br><span class="line">    image: postgres:11.1</span><br><span class="line">    ports:</span><br><span class="line">      - &quot;5432:5432&quot;</span><br><span class="line">    expose:</span><br><span class="line">      - &quot;5432&quot;</span><br></pre></td></tr></table></figure>
+
+<p>默认情况下，容器的端口未向主机开发，，<br>同样的容器端口默认也不会暴露给在联网沙箱中运行的其它容器。<br>即使它们位于同一网络上也是如此。<br>为了将端口公开给在网络沙箱中运行的其他容器，需要设置暴露端口<code>expose</code>的设置。</p>
+<p>注意：对于<code>postgres：1.11</code>镜像，由于创建镜像的人已经暴露了端口 5432。<br>由于您不知道镜像是否是使用已暴露的端口创建的，除非您查看镜像的 Dockerfile，<br>因此最好定义公开<code>expose</code>密钥，即使它是多余的。</p>
+<h3 id="Listing-9"><a href="#Listing-9" class="headerlink" title="Listing 9"></a>Listing 9</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">db:</span><br><span class="line">    image: postgres:11.1</span><br><span class="line">    ports:</span><br><span class="line">      - &quot;5432:5432&quot;</span><br><span class="line">    expose:</span><br><span class="line">      - &quot;5432&quot;</span><br><span class="line">    environment:</span><br><span class="line">      POSTGRES_USER: root</span><br><span class="line">      POSTGRES_PASSWORD: root</span><br><span class="line">      POSTGRES_DB: testdb</span><br><span class="line">    restart: on-failure</span><br><span class="line">    networks:</span><br><span class="line">      - integration-tests-example-test</span><br></pre></td></tr></table></figure>
+
+<p>db 所需要的最终配置选项是环境（<code>environment</code>），重新启动（<code>restart</code>）和网络（<code>networks</code>）。<br><code>networks</code>密钥被赋予已定义网络的名称，与先前的服务定义不同。<br>重新启动密钥的值为<code>on-failure</code>，以确保服务在执行期间的任何时候失败时将自动重启。<br><code>environment</code>选项可以接收环境变量列表，然后在容器的<code>shell</code>中设置。<br>流行应用程序（如 postgres）的大多数托管镜像都具有可以指定的环境变量，以配置镜像提供的应用程序。</p>
+<h2 id="Running-The-Tests"><a href="#Running-The-Tests" class="headerlink" title="Running The Tests"></a>Running The Tests</h2><p>准备好<code>Docker Compose</code>文件后，<br>下一步是根据<code>listd_tests</code>服务中引用的<code>dockerfile</code>构建镜像。<br>此<code>dockerfile</code>定义了一个能够运行整个服务的集成测试的镜像。<br>创建镜像后，即可运行测试。</p>
+<h2 id="Building-an-Image-Capable-of-Running-Tests"><a href="#Building-an-Image-Capable-of-Running-Tests" class="headerlink" title="Building an Image Capable of Running Tests"></a>Building an Image Capable of Running Tests</h2><p>为了构建能够运行测试的镜像，必须在<code>dockerfile</code>中定义四件事：</p>
+<p>获取安装了最新稳定版 Go 的基本映镜像。为 Go 模块安装 git。将可测试代码复制到容器中。运行测试。</p>
+<p>让我们打破这些步骤并分析<code>dockerfile</code>执行它们所需的指令。</p>
+<h3 id="Listing-10"><a href="#Listing-10" class="headerlink" title="Listing 10"></a>Listing 10</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">FROM golang:1.12-alpine</span><br></pre></td></tr></table></figure>
+
+<p>Listing 10 显示了第 4 步。我选择作为基本操作系统映像的镜像是<code>golang：1.11-alpine</code>。镜像在撰写此博客文章时预先安装了 Go 的最新稳定版本。</p>
+<h3 id="Listing-11"><a href="#Listing-11" class="headerlink" title="Listing 11"></a>Listing 11</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">FROM golang:1.11-alpine</span><br><span class="line"></span><br><span class="line">RUN set -ex; \</span><br><span class="line">    apk update; \</span><br><span class="line">    apk add --no-cache git</span><br></pre></td></tr></table></figure>
+
+<p>由于 Alpine OS 非常轻量级，因此必须在基本 Alpine 镜像之上手动安装<code>git</code>依赖项。<br>Listing 11 显示了第 2 步，其中 <code>git</code>被添加到镜像中以便使用<code>Go</code>模块。<br>在添加 git 之前运行<code>apk update</code>命令以确保安装了最新版本的<code>git</code>。<br>如果您的项目恰好使用 <code>cgo</code>，那么您还必须手动安装<code>gcc</code>及其所需的库。</p>
+<h3 id="Listing-12"><a href="#Listing-12" class="headerlink" title="Listing 12"></a>Listing 12</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">FROM golang:1.12-alpine</span><br><span class="line"></span><br><span class="line">RUN set -ex; \</span><br><span class="line">    apk update; \</span><br><span class="line">    apk add --no-cache git</span><br><span class="line"></span><br><span class="line">WORKDIR &#x2F;go&#x2F;src&#x2F;github.com&#x2F;george-e-shaw-iv&#x2F;integration-tests-example&#x2F;</span><br></pre></td></tr></table></figure>
+
+<p>为了便于使用，在 Listing 12 中，<code>WORKDIR</code>指令设置为<code>/go/src/github.com/george-e-shaw-iv/integration-tests-example/</code>，以便其余指令将相对于该目录，这是在容器的<code>$GOPATH</code>内。由于在 Listing 4 中安装了带有可测试代码的卷这一事实，已经处理了将可测试代码复制到容器中的过程的第 3 步。</p>
+<h3 id="Listing-13"><a href="#Listing-13" class="headerlink" title="Listing 13"></a>Listing 13</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">FROM golang:1.12-alpine</span><br><span class="line"></span><br><span class="line">RUN set -ex; \</span><br><span class="line">    apk update; \</span><br><span class="line">    apk add --no-cache git</span><br><span class="line"></span><br><span class="line">WORKDIR &#x2F;go&#x2F;src&#x2F;github.com&#x2F;george-e-shaw-iv&#x2F;integration-tests-example&#x2F;</span><br><span class="line"></span><br><span class="line">CMD CGO_ENABLED&#x3D;0 go test .&#x2F;...</span><br></pre></td></tr></table></figure>
+
+<p>最后，Listing 13 显示了步骤 4，运行测试。</p>
+<p>这是通过使用带有 CMD 指令的 <code>go test ./ ...</code>来完成的。</p>
+<p>测试使用<code>CGO_ENABLED = 0</code>作为内联环境变量运行，因为示例项目中的测试不使用<code>cgo</code>，而 the alpine 基于镜像不附带 C 编译器。即使您的项目中没有<code>cgo</code>代码，也必须以这种方式禁用<code>cgo</code>，因为如果启用了<code>cgo</code>，Go 仍会尝试使用标准 C 库来执行某些网络任务。</p>
+<p>注意：可以在此处找到定义能够从其中运行 Go 测试的自定义镜像的整个<code>Dockerfile</code>的代码。现在编写了定义镜像的 <code>dockerfile</code>，下面的<code>Docker Compose 命</code>令可以调出<code>listd_test</code>和<code>db</code>服务，这些服务将运行所有集成测试并报告结果。</p>
+<h3 id="Listing-14"><a href="#Listing-14" class="headerlink" title="Listing 14"></a>Listing 14</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit</span><br></pre></td></tr></table></figure>
+
+<p><code>--abort-on-container-exit</code>这个标志是必要的，因为如果省略该标志，则在测试完成运行后，包含集成服务的其他容器将挂起。</p>
+<h2 id="Clean-up"><a href="#Clean-up" class="headerlink" title="Clean-up"></a>Clean-up</h2><h3 id="Listing-15"><a href="#Listing-15" class="headerlink" title="Listing 15"></a>Listing 15</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">test:</span><br><span class="line">	docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit</span><br><span class="line">	docker-compose -f docker-compose.test.yml down --volumes</span><br></pre></td></tr></table></figure>
+
+<p>停止和删除容器，卷和网络是一个非常重要的步骤，在运行测试后经常被忽略。<br>弄清楚为什么由于上次测试运行中持续存在的数据而导致测试被破坏的原因是一个不容易避免的小错误。<br>为了防止这种情况发生，我创建了一个简单的<code>makefile</code>规则，<br><code>test</code>，在 Listing 14 中展示，用于构建，运行和拆卸容器，无需任何人为干预。</p>
+<h3 id="Listing-16"><a href="#Listing-16" class="headerlink" title="Listing 16"></a>Listing 16</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">test-db-up:</span><br><span class="line">	docker-compose -f docker-compose.test.yml up --build db</span><br><span class="line"></span><br><span class="line">test-db-down:</span><br><span class="line">	docker-compose -f docker-compose.test.yml down --volumes db</span><br></pre></td></tr></table></figure>
+
+<p>清单 15 中的规则在受限制的环境中最有效，因为它们在<code>Compose</code>文件中启动了两个服务。<br>为了实现本地测试的相同效果，<br>可以在运行任何集成测试之前使用 Listing 16 中的<code>test-db-up</code>规则，并在运行所有测试之后使用<code>testdb-down</code>。</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>在这篇文章中，我向您展示了如何设置 Web 服务项目以使用 Docker 和 Docker Compose。我审查的文件允许您在没有预先安装 Go 的限制性计算环境中运行 Go 测试和依赖项。在本系列的下一部分中，我将展示为 Web 服务设置测试套件所需的 Go 代码，这将是编写富有洞察力的集成测试的基础。</p>
+<p>注意：这整个系列的帖子从此<a href="https://github.com/george-e-shaw-iv/integration-tests-example" target="_blank" rel="noopener">存储库</a>中提取其示例。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/06/26/Go/Translation/GoDesignPhilosophyOnDataAndSemantics/" rel="prev" title="GoDesignPhilosophyOnDataAndSemantics">
+      <i class="fa fa-chevron-left"></i> GoDesignPhilosophyOnDataAndSemantics
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/06/26/Go/Translation/GoGoroutineLeaks_TheAbandonedReceivers/" rel="next" title="GoGoroutineLeaks_TheAbandonedReceivers">
+      GoGoroutineLeaks_TheAbandonedReceivers <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Integration-Testing-in-Go-Part-I-Executing-Tests-with-Docker"><span class="nav-number">1.</span> <span class="nav-text">Integration Testing in Go: Part I - Executing Tests with Docker</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Introduction"><span class="nav-number">1.1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Why-use-Docker-and-Docker-Compose"><span class="nav-number">1.2.</span> <span class="nav-text">Why use Docker and Docker Compose</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Using-Docker-and-Docker-Compose-to-Run-Tests"><span class="nav-number">1.3.</span> <span class="nav-text">Using Docker and Docker Compose to Run Tests</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-1"><span class="nav-number">1.3.1.</span> <span class="nav-text">Listing 1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-2"><span class="nav-number">1.3.2.</span> <span class="nav-text">Listing 2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-3"><span class="nav-number">1.3.3.</span> <span class="nav-text">Listing 3</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-4"><span class="nav-number">1.3.4.</span> <span class="nav-text">Listing 4</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-5"><span class="nav-number">1.3.5.</span> <span class="nav-text">Listing 5</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-6"><span class="nav-number">1.3.6.</span> <span class="nav-text">Listing 6</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-7"><span class="nav-number">1.3.7.</span> <span class="nav-text">Listing 7</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-8"><span class="nav-number">1.3.8.</span> <span class="nav-text">Listing 8</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-9"><span class="nav-number">1.3.9.</span> <span class="nav-text">Listing 9</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Running-The-Tests"><span class="nav-number">1.4.</span> <span class="nav-text">Running The Tests</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Building-an-Image-Capable-of-Running-Tests"><span class="nav-number">1.5.</span> <span class="nav-text">Building an Image Capable of Running Tests</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-10"><span class="nav-number">1.5.1.</span> <span class="nav-text">Listing 10</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-11"><span class="nav-number">1.5.2.</span> <span class="nav-text">Listing 11</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-12"><span class="nav-number">1.5.3.</span> <span class="nav-text">Listing 12</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-13"><span class="nav-number">1.5.4.</span> <span class="nav-text">Listing 13</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-14"><span class="nav-number">1.5.5.</span> <span class="nav-text">Listing 14</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Clean-up"><span class="nav-number">1.6.</span> <span class="nav-text">Clean-up</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-15"><span class="nav-number">1.6.1.</span> <span class="nav-text">Listing 15</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-16"><span class="nav-number">1.6.2.</span> <span class="nav-text">Listing 16</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Conclusion"><span class="nav-number">1.7.</span> <span class="nav-text">Conclusion</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Hei"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Hei</p>
+  <div class="site-description" itemprop="description">心里有梦，眼里有光</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/hei6775" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;hei6775" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/8523015/hey6775" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;8523015&#x2F;hey6775" rel="noopener" target="_blank"><i class="fab fa-stack-overflow fa-fw"></i>StackOverflow</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Hei</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

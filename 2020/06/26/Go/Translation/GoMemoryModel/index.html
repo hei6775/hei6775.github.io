@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="The Go Memory ModelIntroduce&amp;emsp;&amp;emsp;本文翻译自 GoLang 官方 2014 年的文章：The Go Memory Model，如有翻译不合理之处敬请指正，会及时修改。 正文">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GoMemoryModel">
+<meta property="og:url" content="http://yoursite.com/2020/06/26/Go/Translation/GoMemoryModel/index.html">
+<meta property="og:site_name" content="hei">
+<meta property="og:description" content="The Go Memory ModelIntroduce&amp;emsp;&amp;emsp;本文翻译自 GoLang 官方 2014 年的文章：The Go Memory Model，如有翻译不合理之处敬请指正，会及时修改。 正文">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-06-26T06:20:41.000Z">
+<meta property="article:modified_time" content="2020-06-26T06:23:19.384Z">
+<meta property="article:author" content="Hei">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2020/06/26/Go/Translation/GoMemoryModel/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>GoMemoryModel | hei</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">hei</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/26/Go/Translation/GoMemoryModel/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Hei">
+      <meta itemprop="description" content="心里有梦，眼里有光">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="hei">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          GoMemoryModel
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-06-26 14:20:41 / 修改时间：14:23:19" itemprop="dateCreated datePublished" datetime="2020-06-26T14:20:41+08:00">2020-06-26</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="The-Go-Memory-Model"><a href="#The-Go-Memory-Model" class="headerlink" title="The Go Memory Model"></a>The Go Memory Model</h1><h2 id="Introduce"><a href="#Introduce" class="headerlink" title="Introduce"></a>Introduce</h2><p>&emsp;&emsp;本文翻译自 GoLang 官方 2014 年的文章：<a href="https://golang.org/ref/mem" target="_blank" rel="noopener">The Go Memory Model</a>，如有翻译不合理之处敬请指正，会及时修改。</p>
+<h2 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h2><a id="more"></a>
+
+<h3 id="Version-of-May-31-2014"><a href="#Version-of-May-31-2014" class="headerlink" title="Version of May 31, 2014"></a>Version of May 31, 2014</h3><p>Introduction <br /><br>Advice <br /><br>Happens Before <br /><br>Synchronization <br /><br>&emsp;&emsp;Initialization <br /><br>&emsp;&emsp;Goroutine creation <br /><br>&emsp;&emsp;Goroutine destruction <br /><br>&emsp;&emsp;Channel communication <br /><br>&emsp;&emsp;Locks <br /><br>&emsp;&emsp;Once <br /><br>Incorrect synchronization <br /></p>
+<h3 id="Introduce-1"><a href="#Introduce-1" class="headerlink" title="Introduce"></a>Introduce</h3><p>&emsp;&emsp;GoLang 的内存模型指定了一个条件，在这个条件下，可以保证在一个<code>goroutine</code>中读取变量可以被另外一个写入相同变量<br>的<code>goroutine</code>观察到。</p>
+<h3 id="Advice"><a href="#Advice" class="headerlink" title="Advice"></a>Advice</h3><p>如果程序中修改数据时有其他<code>goroutine</code>同时读取，那么必须将读取串行化。<br>为了串行化访问，请使用<code>channel</code>或其他同步原语，例如<code>sync</code>和<code>sync/atomic</code>来保护数据。。</p>
+<p>&emsp;&emsp;别聪明。</p>
+<h3 id="先行发生-Happens-Before"><a href="#先行发生-Happens-Before" class="headerlink" title="先行发生 Happens Before"></a>先行发生 Happens Before</h3><p>&emsp;&emsp;在一个<code>gouroutine</code>中，读和写一定是按照程序中的顺序执行的。<br>即编译器和处理器只有在不会改变这个<code>goroutine</code>的行为时才可能修改读和写的执行顺序。由于重排，不同的 goroutine 可能会看到不同的执行顺序。例如，一个<code>goroutine</code>执行<code>a = 1;b = 2</code>;，另一个<code>goroutine</code>可能看到 b 在 a 之前更新。</p>
+<p>&emsp;&emsp;为了说明读和写的必要条件，我们定义了先行发生（<code>Happens Before</code>）–Go 程序中执行内存操作的偏序。如果事件 e1 发生在 e2 前，我们可以说 e2 发生在 e1 后。如果 e1 不发生在 e2 前也不发生在 e2 后，我们就说 e1 和 e2 是并发的。</p>
+<p>&emsp;&emsp;在单独的 goroutine 中先行发生<code>Happens Before</code>的顺序即是程序中表达的顺序。</p>
+<p>&emsp;&emsp;当下面条件满足时，对变量 v 的读操作 r 是被允许看到对 v 的写操作 w 的：：</p>
+<p>&emsp;&emsp;&emsp;&emsp;1、r 不先行发生于 w；</p>
+<p>&emsp;&emsp;&emsp;&emsp;2、在 w 后 r 前没有对 v 的其他写操作；</p>
+<p>&emsp;&emsp;为了保证对变量 v 的读操作 r 看到对 v 的写操作 w,要确保 w 是 r 允许看到的唯一写操作。即当下面条件满足时，r 被保证看到 w：</p>
+<p>&emsp;&emsp;&emsp;&emsp;1、w 先行发生于 r</p>
+<p>&emsp;&emsp;&emsp;&emsp;2、其他对共享变量 v 的写操作要么在 w 前，要么在 r 后。；</p>
+<p>&emsp;&emsp;这一对条件比前面的条件更严格，需要没有其他写操作与 w 或 r 并发发生。</p>
+<p>&emsp;&emsp;单独的 goroutine 中没有并发，所以上面两个定义是相同的：读操作 r 看到最近一次的写操作 w 写入 v 的值。当多个 goroutine 访问共享变量 v 时，它们必须使用同步事件来建立先行发生这一条件来保证读操作能看到需要的写操作。 对变量 v 的零值初始化在内存模型中表现的与写操作相同。 对大于一个字的变量的读写操作表现的像以不确定顺序对多个一字大小的变量的操作。</p>
+<h3 id="Synchronization"><a href="#Synchronization" class="headerlink" title="Synchronization"></a>Synchronization</h3><h4 id="Initialization"><a href="#Initialization" class="headerlink" title="Initialization"></a>Initialization</h4><p>&emsp;&emsp;程序的初始化在单独的 goroutine 中进行，但这个 goroutine 可能会创建出并发执行的其他 goroutine。</p>
+<p>&emsp;&emsp;如果 A 包引入了 B 包，那么 B 包的<code>init</code>函数会发生在 A 包的<code>init</code>函数之前。</p>
+<p>&emsp;&emsp;<code>main.main</code>函数会发生在所有的<code>init</code>函数结束之后。</p>
+<h4 id="Goroutine-creation"><a href="#Goroutine-creation" class="headerlink" title="Goroutine creation"></a>Goroutine creation</h4><p>&emsp;&emsp;启动新<code>goroutine</code>的<code>go</code>语句发生在<code>goroutine</code>的执行开始之前。</p>
+<p>比如说这段程序：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a <span class="keyword">string</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">f</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="built_in">print</span>(a)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">hello</span><span class="params">()</span></span> &#123;</span><br><span class="line">	a = <span class="string">"hello, world"</span></span><br><span class="line">	<span class="keyword">go</span> f()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>调用<code>hello</code>将在未来的某个时刻打印“hello，world”（也许在 hello 返回之后）。</p>
+<h4 id="Goroutine-destruction"><a href="#Goroutine-destruction" class="headerlink" title="Goroutine destruction"></a>Goroutine destruction</h4><p>&emsp;&emsp;<code>goroutine</code>的退出不保证在程序中的任何事件之前发生。例如，在此程序中：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a <span class="keyword">string</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">hello</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123; a = <span class="string">"hello"</span> &#125;()</span><br><span class="line">	<span class="built_in">print</span>(a)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>没有用任何同步操作限制对 a 的赋值，所以并不能保证其他<code>goroutine</code> 能看到 a 的变化。实际上，一个激进的编译器可能会删掉整个 go 语句。</p>
+<p>如果想要在一个<code>goroutine</code>中看到另一个<code>goroutine</code>的执行效果，请使用锁或者<code>channel</code>这种同步机制来建立程序执行的相对顺序。</p>
+<h4 id="Channel-communication"><a href="#Channel-communication" class="headerlink" title="Channel communication"></a>Channel communication</h4><p>&emsp;&emsp;<code>channel</code>通信是<code>goroutine</code>同步的主要方法。每一个在特定<code>channel</code>的发送操作都会匹配到通常在另一个<code>goroutine</code>执行的接收操作。。</p>
+<p>&emsp;&emsp;在<code>channel</code>的发送操作先行发生于对应的接收操作完成 例如：</p>
+<p>这个程序：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> c = <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>, <span class="number">10</span>)</span><br><span class="line"><span class="keyword">var</span> a <span class="keyword">string</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">f</span><span class="params">()</span></span> &#123;</span><br><span class="line">	a = <span class="string">"hello, world"</span></span><br><span class="line">	c &lt;- <span class="number">0</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">go</span> f()</span><br><span class="line">	&lt;-c</span><br><span class="line">	<span class="built_in">print</span>(a)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个程序能保证打印出”hello, world”。对 a 的写先行发生于在 c 上的发送，先行发生于在 c 上的对应的接收完成，先行发生于<code>print</code>。</p>
+<p><strong>对 channel 的关闭先行发生于接收到零值，因为 channel 已经被关闭了。</strong></p>
+<p>在上面的例子中，将 c &lt;- 0 替换为 close(c)还会产生同样的结果。</p>
+<p><strong>无缓冲 channel 的接收先行发生于发送完成</strong></p>
+<p>如下程序（和上面类似，只交换了对 channel 的读写位置并使用了非缓冲 channel）</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> c = <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>)</span><br><span class="line"><span class="keyword">var</span> a <span class="keyword">string</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">f</span><span class="params">()</span></span> &#123;</span><br><span class="line">	a = <span class="string">"hello, world"</span></span><br><span class="line">	&lt;-c</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">go</span> f()</span><br><span class="line">	c &lt;- <span class="number">0</span></span><br><span class="line">	<span class="built_in">print</span>(a)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>此程序也能保证打印出”hello, world”。对 a 的写先行发生于从 c 接收，先行发生于向 c 发送完成，先行发生于<code>print</code>。<br>如果是带缓冲的 channel（例如<code>c = make(chan int, 1</code>)），<br>程序不保证打印出”hello, world”(可能打印空字符，程序崩溃或其他行为)。</p>
+<p><code>The kth receive on a channel with capacity C happens before the k+Cth send from that channel completes.</code></p>
+<p>在容量为 C 的 channel 上的第 k 个接收先行发生于从这个 channel 上的第 k+C 次发送完成。</p>
+<p>这条规则将前面的规则推广到了带缓冲的<code>channel</code>上。可以通过带缓冲的<code>channel</code>来实现计数信号量：<code>channel</code>中的元素数量对应着活动的数量，<code>channel</code>的容量表示同时活动的最大数量，发送元素获取信号量，接收元素释放信号量，这是限制并发的通常用法。</p>
+<p>这个程序为每个输入开启一个<code>goroutine</code>，但是<code>goroutine</code>的数量对应于通道的容量，最多只能有三个<code>goroutine</code>同时运行。</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> limit = <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>, <span class="number">3</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">for</span> _, w := <span class="keyword">range</span> work &#123;</span><br><span class="line">		<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">(w <span class="keyword">func</span>()</span>)</span> &#123;</span><br><span class="line">			limit &lt;- <span class="number">1</span></span><br><span class="line">			w()</span><br><span class="line">			&lt;-limit</span><br><span class="line">		&#125;(w)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">select</span>&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="Locks"><a href="#Locks" class="headerlink" title="Locks"></a>Locks</h4><p>&emsp;&emsp;<code>sync</code>包提供了两种锁，一种是通用锁<code>sync.Mutex</code>，另一种是读写锁<code>sync.RWMutex</code>。</p>
+<p>不管通用锁还是读写锁而言，<strong>对任意的 sync.Mutex 或 sync.RWMutex 变量 l 和 n &lt; m，n 次调用 l.Unlock()先行发生于 m 次 l.Lock()返回。</strong></p>
+<p>这个程序：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> l sync.Mutex</span><br><span class="line"><span class="keyword">var</span> a <span class="keyword">string</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">f</span><span class="params">()</span></span> &#123;</span><br><span class="line">	a = <span class="string">"hello, world"</span></span><br><span class="line">	l.Unlock()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	l.Lock()</span><br><span class="line">	<span class="keyword">go</span> f()</span><br><span class="line">	l.Lock()</span><br><span class="line">	<span class="built_in">print</span>(a)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>能保证打印出”hello, world”。第一次调用<code>l.Unlock()</code>（在<code>f()</code>中）先行发生于<code>main</code>中的第二次<code>l.Lock()</code>返回, 先行发生于<code>print</code>。</p>
+<p>对于<code>sync.RWMutex</code>变量 l，任意的函数调用<code>l.RLock</code>满足第 n 次<code>l.RLock</code>后发生于第 n 次调用<code>l.Unlock</code>，对应的<code>l.RUnlock</code>先行发生于第 n+1 次调用<code>l.Lock</code>。</p>
+<h4 id="Once"><a href="#Once" class="headerlink" title="Once"></a>Once</h4><p>&emsp;&emsp;<code>sync</code>包的<code>Once</code>为多个<code>goroutine</code>提供了安全的初始化机制。能在多个线程中执行<code>once.Do(f)</code>，但只有一个<code>f()</code>会执行，其他调用会一直阻塞直到<code>f()</code>返回。</p>
+<p>通过执行先行发生（指<code>f()</code>返回）于其他的返回。</p>
+<p><code>A single call of f() from once.Do(f) happens (returns) before any call of once.Do(f) returns.</code></p>
+<p>在这段程序中：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a <span class="keyword">string</span></span><br><span class="line"><span class="keyword">var</span> once sync.Once</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">setup</span><span class="params">()</span></span> &#123;</span><br><span class="line">	a = <span class="string">"hello, world"</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">doprint</span><span class="params">()</span></span> &#123;</span><br><span class="line">	once.Do(setup)</span><br><span class="line">	<span class="built_in">print</span>(a)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">twoprint</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">go</span> doprint()</span><br><span class="line">	<span class="keyword">go</span> doprint()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>调用<code>twoprint</code>会打印”hello, world”两次。<code>setup</code>只在第一次<code>doprint</code>时执行。</p>
+<h2 id="Incorrect-synchronization"><a href="#Incorrect-synchronization" class="headerlink" title="Incorrect synchronization"></a>Incorrect synchronization</h2><p>&emsp;&emsp;注意，读操作 r 可能会看到并发的写操作 w。即使这样也不能表明 r 之后的读能看到 w 之前的写。</p>
+<p>在这个程序中：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a, b <span class="keyword">int</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">f</span><span class="params">()</span></span> &#123;</span><br><span class="line">	a = <span class="number">1</span></span><br><span class="line">	b = <span class="number">2</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">g</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="built_in">print</span>(b)</span><br><span class="line">	<span class="built_in">print</span>(a)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">go</span> f()</span><br><span class="line">	g()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>g 可能先打印出 2 然后是 0。</p>
+<p>这个事实证明一些旧的习惯是错误的。</p>
+<p>双重检查锁定是为了避免同步的资源消耗。例如<code>twoprint</code>程序可能会错误的写成</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a <span class="keyword">string</span></span><br><span class="line"><span class="keyword">var</span> done <span class="keyword">bool</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">setup</span><span class="params">()</span></span> &#123;</span><br><span class="line">	a = <span class="string">"hello, world"</span></span><br><span class="line">	done = <span class="literal">true</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">doprint</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> !done &#123;</span><br><span class="line">		once.Do(setup)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">print</span>(a)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">twoprint</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">go</span> doprint()</span><br><span class="line">	<span class="keyword">go</span> doprint()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在<code>doprint</code>中看到<code>done</code>被赋值并不保证能看到对 a 赋值。此程序可能会错误地输出空字符而不是”hello, world”。</p>
+<p>另一个错误的习惯是忙等待 例如：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a <span class="keyword">string</span></span><br><span class="line"><span class="keyword">var</span> done <span class="keyword">bool</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">setup</span><span class="params">()</span></span> &#123;</span><br><span class="line">	a = <span class="string">"hello, world"</span></span><br><span class="line">	done = <span class="literal">true</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">go</span> setup()</span><br><span class="line">	<span class="keyword">for</span> !done &#123;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">print</span>(a)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>和之前程序类似，在<code>main</code>中看到<code>done</code>被赋值不能保证看到 a 被赋值，所以此程序也可能打印出空字符。更糟糕的是因为两个线程间没有同步事件，在<code>main</code>中可能永远不会看到<code>done</code>被赋值，所以<code>main</code>中的循环不保证能结束。</p>
+<p>对程序做一个微小的改变：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">	msg <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> g *T</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">setup</span><span class="params">()</span></span> &#123;</span><br><span class="line">	t := <span class="built_in">new</span>(T)</span><br><span class="line">	t.msg = <span class="string">"hello, world"</span></span><br><span class="line">	g = t</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">go</span> setup()</span><br><span class="line">	<span class="keyword">for</span> g == <span class="literal">nil</span> &#123;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">print</span>(g.msg)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>即使<code>main</code>看到了<code>g != nil</code>并且退出了循环，也不能保证看到<code>g.msg</code>的初始化值。</p>
+<p><code>In all these examples, the solution is the same: use explicit synchronization.</code></p>
+<p>在所有这些示例中，解决方案是相同的：明确的使用同步。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/06/26/Go/Translation/GoLanguageMechanicsOnStacksAndPointers/" rel="prev" title="GoLanguageMechanicsOnStacksAndPointers">
+      <i class="fa fa-chevron-left"></i> GoLanguageMechanicsOnStacksAndPointers
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/06/26/Go/Translation/GoReadme/" rel="next" title="GoReadme">
+      GoReadme <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#The-Go-Memory-Model"><span class="nav-number">1.</span> <span class="nav-text">The Go Memory Model</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Introduce"><span class="nav-number">1.1.</span> <span class="nav-text">Introduce</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正文"><span class="nav-number">1.2.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Version-of-May-31-2014"><span class="nav-number">1.2.1.</span> <span class="nav-text">Version of May 31, 2014</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Introduce-1"><span class="nav-number">1.2.2.</span> <span class="nav-text">Introduce</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Advice"><span class="nav-number">1.2.3.</span> <span class="nav-text">Advice</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#先行发生-Happens-Before"><span class="nav-number">1.2.4.</span> <span class="nav-text">先行发生 Happens Before</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Synchronization"><span class="nav-number">1.2.5.</span> <span class="nav-text">Synchronization</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Initialization"><span class="nav-number">1.2.5.1.</span> <span class="nav-text">Initialization</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Goroutine-creation"><span class="nav-number">1.2.5.2.</span> <span class="nav-text">Goroutine creation</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Goroutine-destruction"><span class="nav-number">1.2.5.3.</span> <span class="nav-text">Goroutine destruction</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Channel-communication"><span class="nav-number">1.2.5.4.</span> <span class="nav-text">Channel communication</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Locks"><span class="nav-number">1.2.5.5.</span> <span class="nav-text">Locks</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Once"><span class="nav-number">1.2.5.6.</span> <span class="nav-text">Once</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Incorrect-synchronization"><span class="nav-number">1.3.</span> <span class="nav-text">Incorrect synchronization</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Hei"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Hei</p>
+  <div class="site-description" itemprop="description">心里有梦，眼里有光</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/hei6775" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;hei6775" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/8523015/hey6775" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;8523015&#x2F;hey6775" rel="noopener" target="_blank"><i class="fab fa-stack-overflow fa-fw"></i>StackOverflow</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Hei</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

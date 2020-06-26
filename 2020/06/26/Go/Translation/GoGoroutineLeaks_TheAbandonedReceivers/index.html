@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Goroutine Leaks - The Abandoned ReceiversAuthor: Jacob WalkerDecember 19, 2018  原文地址 ：Goroutine Leaks - The Abandoned Receivers 简介泄漏：被遗弃的接收者For this leak example you will see multiple Goroutines block">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GoGoroutineLeaks_TheAbandonedReceivers">
+<meta property="og:url" content="http://yoursite.com/2020/06/26/Go/Translation/GoGoroutineLeaks_TheAbandonedReceivers/index.html">
+<meta property="og:site_name" content="hei">
+<meta property="og:description" content="Goroutine Leaks - The Abandoned ReceiversAuthor: Jacob WalkerDecember 19, 2018  原文地址 ：Goroutine Leaks - The Abandoned Receivers 简介泄漏：被遗弃的接收者For this leak example you will see multiple Goroutines block">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-06-26T06:18:38.000Z">
+<meta property="article:modified_time" content="2020-06-26T06:25:16.601Z">
+<meta property="article:author" content="Hei">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2020/06/26/Go/Translation/GoGoroutineLeaks_TheAbandonedReceivers/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>GoGoroutineLeaks_TheAbandonedReceivers | hei</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">hei</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/26/Go/Translation/GoGoroutineLeaks_TheAbandonedReceivers/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Hei">
+      <meta itemprop="description" content="心里有梦，眼里有光">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="hei">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          GoGoroutineLeaks_TheAbandonedReceivers
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-06-26 14:18:38 / 修改时间：14:25:16" itemprop="dateCreated datePublished" datetime="2020-06-26T14:18:38+08:00">2020-06-26</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Goroutine-Leaks-The-Abandoned-Receivers"><a href="#Goroutine-Leaks-The-Abandoned-Receivers" class="headerlink" title="Goroutine Leaks - The Abandoned Receivers"></a>Goroutine Leaks - The Abandoned Receivers</h1><p align="right">Author: Jacob WalkerDecember 19, 2018</p>
+
+<p>原文地址 ：<a href="https://www.ardanlabs.com/blog/2018/12/goroutine-leaks-the-abandoned-receivers.html" target="_blank" rel="noopener">Goroutine Leaks - The Abandoned Receivers</a></p>
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><h2 id="泄漏：被遗弃的接收者"><a href="#泄漏：被遗弃的接收者" class="headerlink" title="泄漏：被遗弃的接收者"></a>泄漏：被遗弃的接收者</h2><p><strong>For this leak example you will see multiple Goroutines blocked waiting to receive values that will never be sent.</strong></p>
+<a id="more"></a>
+
+<h3 id="Listing-1"><a href="#Listing-1" class="headerlink" title="Listing 1"></a>Listing 1</h3><p><a href="https://play.golang.org/p/Jtpla_UvrmN" target="_blank" rel="noopener">https://play.golang.org/p/Jtpla_UvrmN</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">35 &#x2F;&#x2F; processRecords is given a slice of values such as lines</span><br><span class="line">36 &#x2F;&#x2F; from a file. The order of these values is not important</span><br><span class="line">37 &#x2F;&#x2F; so the function can start multiple workers to perform some</span><br><span class="line">38 &#x2F;&#x2F; processing on each record then feed the results back.</span><br><span class="line">39 func processRecords(records []string) &#123;</span><br><span class="line">40</span><br><span class="line">41     &#x2F;&#x2F; Load all of the records into the input channel. It is</span><br><span class="line">42     &#x2F;&#x2F; buffered with just enough capacity to hold all of the</span><br><span class="line">43     &#x2F;&#x2F; records so it will not block.</span><br><span class="line">44</span><br><span class="line">45     total :&#x3D; len(records)</span><br><span class="line">46     input :&#x3D; make(chan string, total)</span><br><span class="line">47     for _, record :&#x3D; range records &#123;</span><br><span class="line">48         input &lt;- record</span><br><span class="line">49     &#125;</span><br><span class="line">50     &#x2F;&#x2F; close(input) &#x2F;&#x2F; What if we forget to close the channel?</span><br><span class="line">51</span><br><span class="line">52     &#x2F;&#x2F; Start a pool of workers to process input and send</span><br><span class="line">53     &#x2F;&#x2F; results to output. Base the size of the worker pool on</span><br><span class="line">54     &#x2F;&#x2F; the number of logical CPUs available.</span><br><span class="line">55</span><br><span class="line">56     output :&#x3D; make(chan string, total)</span><br><span class="line">57     workers :&#x3D; runtime.NumCPU()</span><br><span class="line">58     for i :&#x3D; 0; i &lt; workers; i++ &#123;</span><br><span class="line">59         go worker(i, input, output)</span><br><span class="line">60     &#125;</span><br><span class="line">61</span><br><span class="line">62     &#x2F;&#x2F; Receive from output the expected number of times. If 10</span><br><span class="line">63     &#x2F;&#x2F; records went in then 10 will come out.</span><br><span class="line">64</span><br><span class="line">65     for i :&#x3D; 0; i &lt; total; i++ &#123;</span><br><span class="line">66         result :&#x3D; &lt;-output</span><br><span class="line">67         fmt.Printf(&quot;[result  ]: output %s\n&quot;, result)</span><br><span class="line">68     &#125;</span><br><span class="line">69 &#125;</span><br><span class="line">70</span><br><span class="line">71 &#x2F;&#x2F; worker is the work the program wants to do concurrently.</span><br><span class="line">72 &#x2F;&#x2F; This is a blog post so all the workers do is capitalize a</span><br><span class="line">73 &#x2F;&#x2F; string but imagine they are doing something important.</span><br><span class="line">74 &#x2F;&#x2F;</span><br><span class="line">75 &#x2F;&#x2F; Each goroutine can&#39;t know how many records it will get so</span><br><span class="line">76 &#x2F;&#x2F; it must use the range keyword to receive in a loop.</span><br><span class="line">77 func worker(id int, input &lt;-chan string, output chan&lt;- string) &#123;</span><br><span class="line">78     for v :&#x3D; range input &#123;</span><br><span class="line">79         fmt.Printf(&quot;[worker %d]: input %s\n&quot;, id, v)</span><br><span class="line">80         output &lt;- strings.ToUpper(v)</span><br><span class="line">81     &#125;</span><br><span class="line">82     fmt.Printf(&quot;[worker %d]: shutting down\n&quot;, id)</span><br><span class="line">83 &#125;</span><br></pre></td></tr></table></figure>
+
+<p>在第 39 行的<code>Listing 1</code>中，定义了一个名为<code>processRecords</code>的函数。<br>该函数接受一个<code>string</code>类型的切片。在第 46 行，一个名为<code>input</code>的缓冲通道。<br>第 47 和 48 行运行一个循环，复制<code>string</code>切片中的每个值并将它们发送到通道。<br><code>input</code>创建的通道具有足够的容量来保存切片中的每个值，<br>因此第 48 行上的通道发送都不会阻塞。此通道是用于在多个<code>Goroutines</code>之间分配值的管道。</p>
+<p>接下来在第 56 到 60 行，该程序创建了一个<code>Goroutines</code>池来接收来自管道中的工作。<br>在第 56 行，创建了一个名为<code>output</code>的缓冲通道; 这是每个<code>Goroutine</code>将发送其结果的地方。<br>第 57 到 59 行运行循环以使用该<code>worker</code>函数创建多个<code>Goroutines</code> 。<br><code>Goroutines</code>的数量等于机器上的逻辑 CPU 数量。<br>循环变量的副本<code>i</code>以及<code>input</code>和<code>output</code>通道都传递给<code>Goroutine</code>。</p>
+<p>该 worker 函数定义在在第 77 行。<br>函数的签名定义 input 为 a &lt;-chan string，这意味着它是一个只接收通道。<br>该函数也接受 output，chan&lt;- string 这意味着它是一个只发送通道。</p>
+<p>在函数内部，<code>Goroutines</code>接受来自<code>input</code>通道的消息，<br>在第 78 行使用<code>range</code>循环从通道接收。<br>在通道上使用在<code>range</code>循环接收，直到通道关闭并且没有值。<br>对于每次迭代，将接收到的值分配给 v 在第 79 行打印的迭代变量。<br>然后在第 80 行，worker 函数传递 v 给<code>strings</code>.ToUpper 返回 new 的函数 string。<br>工作协程立即在 output 通道上发送新的<code>string</code>。</p>
+<p>回到<code>processRecords</code>函数中，执行已经向下移动到第 65 行，<br>在那里运行另一个循环。该循环迭代，直到它接收并处理了来自 output 通道的所有值。<br>在第 66 行，该<code>processRecords</code>函数等待从一个工作者<code>Goroutines</code>接收一个值。<br>接收到的值打印在第 67 行。当程序收到每个输入的值时，它退出循环并终止该功能。</p>
+<p>运行此程序打印转换后的数据，<br>因此它似乎工作，但该程序正在泄漏多个<code>Goroutines</code>。<br>该程序从未到达第 82 行，该行将宣布工人正在关闭。<br>即使在<code>processRecords</code>函数返回之后，<br>每个工作者<code>Goroutines</code>仍处于活动状态并等待第 78 行的输入。<br>通过一个通道接收直到通道关闭并为空。问题是程序永远不会关闭。</p>
+<p>##　 Fix: Signal Completion</p>
+<p>###　 Listing 2<br><a href="https://play.golang.org/p/QNsxbT0eIay" target="_blank" rel="noopener">https://play.golang.org/p/QNsxbT0eIay</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">45     total :&#x3D; len(records)</span><br><span class="line">46     input :&#x3D; make(chan string, total)</span><br><span class="line">47     for _, record :&#x3D; range records &#123;</span><br><span class="line">48         input &lt;- record</span><br><span class="line">49     &#125;</span><br><span class="line">50     close(input)</span><br></pre></td></tr></table></figure>
+
+<p>关闭缓冲区中仍有值的缓冲通道是有效的;通道仅关闭发送而不是接收。<br>工作人员 Goroutines 运行范围输入将通过缓冲区工作，直到它们被通知通道已关闭。<br>这可以让工人在终止之前完成循环。</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>正如前一篇文章中所提到的，Go 使得启动 Goroutines 变得简单，但是你有责任仔细使用它们。在这篇文章中，我展示了另一个可以轻易做出的 Goroutine 错误。还有很多方法可以创建 Goroutine 泄漏以及使用并发时可能遇到的其他陷阱。未来的帖子将继续讨论这些陷阱。与往常一样，我将继续重复这一建议：“ 如果不知道它会如何停止，就不要开始使用 goroutine ”。</p>
+<p>并发是一种有用的工具，但必须谨慎使用。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/06/26/Go/Translation/GoExecutingTestsWithDocker/" rel="prev" title="GoExecutingTestsWithDocker">
+      <i class="fa fa-chevron-left"></i> GoExecutingTestsWithDocker
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/06/26/Go/Translation/GoGoroutineLeaks_TheForgottenSender/" rel="next" title="GoGoroutineLeaks_TheForgottenSender">
+      GoGoroutineLeaks_TheForgottenSender <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Goroutine-Leaks-The-Abandoned-Receivers"><span class="nav-number">1.</span> <span class="nav-text">Goroutine Leaks - The Abandoned Receivers</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#简介"><span class="nav-number">1.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#泄漏：被遗弃的接收者"><span class="nav-number">1.2.</span> <span class="nav-text">泄漏：被遗弃的接收者</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-1"><span class="nav-number">1.2.1.</span> <span class="nav-text">Listing 1</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Conclusion"><span class="nav-number">1.3.</span> <span class="nav-text">Conclusion</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Hei"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Hei</p>
+  <div class="site-description" itemprop="description">心里有梦，眼里有光</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/hei6775" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;hei6775" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/8523015/hey6775" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;8523015&#x2F;hey6775" rel="noopener" target="_blank"><i class="fab fa-stack-overflow fa-fw"></i>StackOverflow</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Hei</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

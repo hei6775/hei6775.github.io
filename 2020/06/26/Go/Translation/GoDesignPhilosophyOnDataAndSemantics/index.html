@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Design Philosophy On Data And SemanticsAuthor: William KennedyJune 8, 2017  原文地址 ：Design Philosophy On Data And Semantics 前言本系列文章总共四篇，主要帮助大家理解 Go 语言中一些语法结构和其背后的设计原则，包括指针、栈、堆、逃逸分析和值或者指针传递。这是最后一篇，重点介绍在代">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GoDesignPhilosophyOnDataAndSemantics">
+<meta property="og:url" content="http://yoursite.com/2020/06/26/Go/Translation/GoDesignPhilosophyOnDataAndSemantics/index.html">
+<meta property="og:site_name" content="hei">
+<meta property="og:description" content="Design Philosophy On Data And SemanticsAuthor: William KennedyJune 8, 2017  原文地址 ：Design Philosophy On Data And Semantics 前言本系列文章总共四篇，主要帮助大家理解 Go 语言中一些语法结构和其背后的设计原则，包括指针、栈、堆、逃逸分析和值或者指针传递。这是最后一篇，重点介绍在代">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-06-26T06:17:22.000Z">
+<meta property="article:modified_time" content="2020-06-26T06:25:52.884Z">
+<meta property="article:author" content="Hei">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2020/06/26/Go/Translation/GoDesignPhilosophyOnDataAndSemantics/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>GoDesignPhilosophyOnDataAndSemantics | hei</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">hei</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/26/Go/Translation/GoDesignPhilosophyOnDataAndSemantics/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Hei">
+      <meta itemprop="description" content="心里有梦，眼里有光">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="hei">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          GoDesignPhilosophyOnDataAndSemantics
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-06-26 14:17:22 / 修改时间：14:25:52" itemprop="dateCreated datePublished" datetime="2020-06-26T14:17:22+08:00">2020-06-26</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Design-Philosophy-On-Data-And-Semantics"><a href="#Design-Philosophy-On-Data-And-Semantics" class="headerlink" title="Design Philosophy On Data And Semantics"></a>Design Philosophy On Data And Semantics</h1><p align="right">Author: William KennedyJune 8, 2017</p>
+
+<p>原文地址 ：<a href="https://www.ardanlabs.com/blog/2017/06/design-philosophy-on-data-and-semantics.html" target="_blank" rel="noopener">Design Philosophy On Data And Semantics</a></p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本系列文章总共四篇，主要帮助大家理解 Go 语言中一些语法结构和其背后的设计原则，包括指针、栈、堆、逃逸分析和值或者指针传递。这是最后一篇，重点介绍在代码中使用值和指针的数据和语义的设计哲学。</p>
+<a id="more"></a>
+
+<p>以下是本系列文章的索引：</p>
+<ol>
+<li>Language Mechanics On Stacks And Pointers</li>
+<li>Language Mechanics On Escape Analysis</li>
+<li>Language Mechanics On Memory Profiling</li>
+<li>Design Philosophy On Data And Semantics</li>
+</ol>
+<h2 id="Design-Philosophies"><a href="#Design-Philosophies" class="headerlink" title="Design Philosophies"></a>Design Philosophies</h2><p><strong>“Value semantics keep values on the stack, which reduces pressure on the Garbage Collector (GC). However, value semantics require various copies of any given value to be stored, tracked and maintained. Pointer semantics place values on the heap, which can put pressure on the GC. However, pointer semantics are efficient because only one value needs to be stored, tracked and maintained.” - Bill Kennedy</strong></p>
+<p><strong>“在栈上保存值，这减少了垃圾收集器（GC）的压力。然而，却要求存储、跟踪和维护给定值的多个副本。将值放在堆上，这会给 GC 增加压力。但是它也是有用的，因为只需要针对一个值进行存储、跟踪和维护。” - Bill Kennedy</strong></p>
+<p><strong>对于给定类型的数据，想在整个软件中保持完整性和可读性，使用值或者指针要保持一致。为什么？因为，如果你在函数间传递数据时修改数据语义，将很难维护一个清晰一致的心智模型。代码库和团队越大，越多的 bug、对数据的竞争和其他副作用就会悄悄地潜入到代码库中。</strong></p>
+<p><strong>我想从一组设计哲学开始讨论，它将指导（我们如何）选择一种语义而不是另外一种语义的方法。</strong></p>
+<h2 id="Mental-Models"><a href="#Mental-Models" class="headerlink" title="Mental Models"></a>Mental Models</h2><p><strong>“Let’s imagine a project that’s going to end up with a million lines of code or more. The probability of those projects being successful in the United States these days is very low - well under 50%. That’s debatable”. - Tom Love (inventor of Objective C)</strong></p>
+<p><strong>“让我们想象有这样一个项目，它包含一百万行以上的代码量。这些项目当前在美国能成功的可能性很低，远低于 50%。或许有人不同意这个说法。” - Tom Love (inventor of Objective C)</strong></p>
+<p>Tom 还说一盒复印纸可以容纳 10 万行代码。稍微想一下。你能掌控这个盒子中的代码的百分之多少呢？</p>
+<p>我相信要一个开发人员维护一张纸上的代码的心智模型（大约 1 万行代码）已经是个问题。但是，我们还是假设每个开发人员开发 1 万行代码，那么需要由 100 位开发人员组成的团队来维护一个包含 100 万行代码的代码库。也就是说 100 人需要协调，分组，跟踪和不断沟通。现在，再看看你们 1 到 10 名开发人员组成的团队。你们在这个小得多的规模做得如何？假设每人 1 万行代码，（你们）团队规模与代码库的大小是否相符？</p>
+<h2 id="Debugging"><a href="#Debugging" class="headerlink" title="Debugging"></a>Debugging</h2><p><strong>“The hardest bugs are those where your mental model of the situation is just wrong, so you can’t see the problem at all” - Brian Kernighan</strong></p>
+<p><strong>“最大的问题是你的心智模型是错误的，所以你根本找不到问题所在。” - Brian Kernighan</strong></p>
+<p>我不相信，你能在没有心智模型的基础上，使用调试器解决问题，你只不过是在浪费时间精力尝试理解问题。</p>
+<p>如果你在生产环境中遇到问题，你能问谁？没错，日志。如果日志在你开发过程中对你没有用，那么当生产环境上出问题，它也一定对你没有用。日志应该基于代码的心智模型，这样才能通过阅读代码找到问题所在。</p>
+<h2 id="Readability"><a href="#Readability" class="headerlink" title="Readability"></a>Readability</h2><p><strong>“C is the best balance I’ve ever seen between power and expressiveness. You can do almost anything you want to do by programming fairly straightforwardly and you will have a very good mental model of what’s going to happen on the machine; you can predict reasonably well how quickly it’s going to run, you understand what’s going on ….” - Brian Kernighan</strong></p>
+<p><strong>C 语言是我见过的在性能和表达性上平衡得最好的。你可以通过简单的编程实现任何你想要做的事情，并且你会对机器即将要发生的事情拥有一个非常好的心智模型。你可以非常合理地预测它的速度，你知道即将要发生什么…” - Brian Kernighan</strong></p>
+<p>我相信 Brian 这句话也适用于 Go。保持这种 “心智模型” 就是一切。它驱动完整性，可读性和简单性。这些是精心编写的软件的基石，使得它可以保持正常并持续运行下去。编写保证给定类型数据的值或者指针语义一致的代码是实现这一点的重要方法。</p>
+<h2 id="Data-Oriented-Design"><a href="#Data-Oriented-Design" class="headerlink" title="Data Oriented Design"></a>Data Oriented Design</h2><p><strong>“If you don’t understand the data, you don’t understand the problem. This is because all problems are unique and specific to the data you are working with. When the data is changing, your problems are changing. When your problems are changing, the algorithms (data transformations) needs to change with it.” - Bill Kennedy</strong></p>
+<p><strong>“如果你不了解这些数据，你就不明白这个问题。因为所有的问题都是独特的，并且与你所使用的数据关系紧密。当数据发生变化时，你的问题也会跟着变化。但问题发生变化时，你的算法（数据转换）也需要跟着变化。” - Bill Kennedy</strong></p>
+<p>想一想。你解决问题的方法实际上是解决数据转换的问题。你写的每个函数，运行的每个程序，（只不过）都是获取一些输入数据，产生一些输出数据。从这个角度看，你的软件的心智模型就是对这些数据转换的理解（例如，如何在代码中组织和使用它们）。”少即是多” 的原则对于解决问题时实现较少的层数，代码量，迭代次数，以及降低复杂性和减少工作量非常重要。</p>
+<h2 id="Type-Is-Life"><a href="#Type-Is-Life" class="headerlink" title="Type (Is Life)"></a>Type (Is Life)</h2><p><strong>“Integrity means that every allocation, every read of memory and every write of memory is accurate, consistent and efficient. The type system is critical to making sure we have this micro level of integrity.” - William Kennedy</strong></p>
+<p><strong>“完整性意味着每次分配内存，读取内存和写入内存都是准确，一致和高效的。类型系统对于我们具有这种微观完整性至关重要。” - William Kennedy</strong></p>
+<p>如果数据驱动你所做的一切，那么代表数据的类型就十分地重要。在我的观点里面 “类型就是生命”，因为类型为编译器提供了确保数据完整性的能力。类型也驱动并指示语义规则，程序必须遵循其所操作的数据的语义。这是正确地使用值或者指针语义的开始：使用类型。</p>
+<h2 id="Data-With-Capability"><a href="#Data-With-Capability" class="headerlink" title="Data (With Capability)"></a>Data (With Capability)</h2><p><strong>“Methods are valid when it is practical or reasonable for a piece of data to have a capability.” - William Kennedy</strong></p>
+<p><strong>“当数据是实际和合理的，方法才是有效的。” - William Kennedy</strong></p>
+<p>值或者指针语义的思想不会直接影响 Go 开发人员，除非他们需要决定方法接收值还是指针。这是我遇到的一个问题：我应该使用值作为参数还是指针？一听到这个问题，我就知道这个开发人员没有理解好这些（类型的）语义。</p>
+<p>方法的目的是使这些数据具有某种能力。想象一下，数据有能力做某些事情。我总是希望把重点放在数据上，因为它驱动程序的功能。数据驱动你写的算法，封装和能达到的性能。</p>
+<h2 id="Polymorphism"><a href="#Polymorphism" class="headerlink" title="Polymorphism"></a>Polymorphism</h2><p><strong>“Polymorphism means that you write a certain program and it behaves differently depending on the data that it operates on.” - Tom Kurtz (inventor of BASIC)</strong></p>
+<p><strong>“多态意味着你写了一个特定的程序，但它的行为有所不同，具体取决于它所操作的数据。” - Tom Kurtz (inventor of BASIC)</strong></p>
+<p>我很喜欢 Tom 上面说的话。函数的行为可以根据操作的数据的不同而不同。这个数据的行为是将函数从它们可以接受和使用的具体数据类型中分离出来的，这是数据可以具有某种能力的原因。这个观点是使得架构和设计可以适应变化的系统的基石。</p>
+<h2 id="Prototype-First-Approach"><a href="#Prototype-First-Approach" class="headerlink" title="Prototype First Approach"></a>Prototype First Approach</h2><p><strong>“Unless the developer has a really good idea of what the software is going to be used for, there’s a very high probability that the software will turn out badly. If the developers don’t know and understand the application well, then it’s crucial to get as much user input and experience as possible.” - Brian Kernighan</strong></p>
+<p><strong>“除非开发人员对软件会被如何使用有一个很好的了解，否则软件很可能会出问题。如果开发人员不是很了解或者对软件不是很理解，那么获得尽可能多的用户输入和用户级测试就相当的重要。” - Brian Kernighan</strong></p>
+<p>我希望你始终专注于理解具体的数据和为了解决问题所需要的数据转换的算法。采用这种原型的第一种方法，编写也可以在生产环境中部署的具体实现（如果这样做是合理和实际的话）。一旦一个具体的实现已经能够工作，一旦你已经知道哪些工作起作用，哪些不起作用，就应该关注于重构，将实现与具体数据分离，将之赋予数据以能力（译者注：我的理解，简单地说，就是抽象为数据类型的一个方法）。</p>
+<h2 id="Semantic-Guidelines"><a href="#Semantic-Guidelines" class="headerlink" title="Semantic Guidelines"></a>Semantic Guidelines</h2><p>你在声明类型时，必须决定特定数据类型将使用哪种语义，值或者指针。接收或返回该类型数据的 API 必须遵循为该类型选择的语义。API 不允许（用户）指定或改变语义。他们必须知道数据使用什么语义，并符合这一点。这是实现大型代码库一致性的起码要求。</p>
+<p>以下是基本指导原则：</p>
+<ul>
+<li>当你声明一个类型时，你必须决定所使用的语义</li>
+<li>函数和方法必须遵循给定类型所选择的语义</li>
+<li>避免让方法接收与给定类型相对应的不同语义</li>
+<li>避免函数接收或者返回与给定类型相对应的不同语义</li>
+<li>避免改变给定类型的语义</li>
+<li></li>
+</ul>
+<p>这些指导原则有一些例外的情况，最大的是 <code>unmarshaling</code>。<code>Unmarshaling</code>总是需要使用指针语义。<code>Marshaling</code>和<code>unmarshaling</code>似乎总是例外的规则。</p>
+<p>你如何选择一种给定类型的一种语义而不是另外一种？这些指导方针将回答这个问题。以下我们将在具体的情况下使用指导原则：</p>
+<h2 id="Built-In-Types"><a href="#Built-In-Types" class="headerlink" title="Built-In Types"></a>Built-In Types</h2><p>Go 语言中内置类型包括数字，文本和布尔类型。这些类型应该使用值语义进行处理。除非你有非常好的理由，否则不要使用指针来共享这些类型的值。</p>
+<p>作为一个例子，从<code>strings</code>包中查看这些函数的声明。</p>
+<h3 id="Listing-1"><a href="#Listing-1" class="headerlink" title="Listing 1"></a>Listing 1</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">func Replace(s, old, new string, n int) string</span><br><span class="line">func LastIndex(s, sep string) int</span><br><span class="line">func ContainsRune(s string, r rune) bool</span><br></pre></td></tr></table></figure>
+
+<p>所有这些函数在 API 设置中都使用值语义。</p>
+<h2 id="Reference-Types"><a href="#Reference-Types" class="headerlink" title="Reference Types"></a>Reference Types</h2><p>Go 语言中引用类型包括<code>slice</code>，<code>map</code>，<code>interface</code>，<code>function</code>和<code>channel</code>。这些类型建议使用值语义，因为它们被设计成待在栈中以最小化堆的压力。它们允许每个函数都有自己的值副本，而不是每个函数都会造成潜在的分配。这是可能的，因为这些值包含一个在调用之间共享底层数据结构的指针。</p>
+<p>除非你有很好的理由，否则不要用指针共享这些类型的值。将调用栈中的<code>map</code> 或<code>slice</code>共享给<code>Unmarshal</code>函数可能是一个例外。作为一个例子，看看<code>net</code>库上声明的这两种类型。</p>
+<h3 id="Listing-2"><a href="#Listing-2" class="headerlink" title="Listing 2"></a>Listing 2</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">type IP []byte</span><br><span class="line">type IPMask []byte</span><br></pre></td></tr></table></figure>
+
+<p><code>IP</code>和<code>IPMask</code>都是字节切片。这意味着它们是引用类型，并且它们应该要符合值语义。下面是一个名叫<code>Mask</code>的方法，它被声明为接收一个<code>IPMask</code>值的<code>IP</code>类型。</p>
+<h3 id="Listing-3"><a href="#Listing-3" class="headerlink" title="Listing 3"></a>Listing 3</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">func (ip IP) Mask(mask IPMask) IP &#123;</span><br><span class="line">    if len(mask) &#x3D;&#x3D; IPv6len &amp;&amp; len(ip) &#x3D;&#x3D; IPv4len &amp;&amp; allFF(mask[:12]) &#123;</span><br><span class="line">        mask &#x3D; mask[12:]</span><br><span class="line">    &#125;</span><br><span class="line">    if len(mask) &#x3D;&#x3D; IPv4len &amp;&amp; len(ip) &#x3D;&#x3D; IPv6len &amp;&amp; bytesEqual(ip[:12], v4InV6Prefix) &#123;</span><br><span class="line">        ip &#x3D; ip[12:]</span><br><span class="line">    &#125;</span><br><span class="line">    n :&#x3D; len(ip)</span><br><span class="line">    if n !&#x3D; len(mask) &#123;</span><br><span class="line">        return nil</span><br><span class="line">    &#125;</span><br><span class="line">    out :&#x3D; make(IP, n)</span><br><span class="line">    for i :&#x3D; 0; i &lt; n; i++ &#123;</span><br><span class="line">        out[i] &#x3D; ip[i] &amp; mask[i]</span><br><span class="line">    &#125;</span><br><span class="line">    return out</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>请注意，此方法是一种转变操作，并使用值语义的<code>API</code>样式。它使用<code>IP</code>值作为接收方，并根据传入的<code>IPMask</code>值创建一个新的<code>IP</code>值并将其返回给调用方。该方法遵循对引用类型使用值语义（的基本指导原则）。</p>
+<p>这跟系统默认的<code>append</code>函数有点相似。</p>
+<h3 id="Listing-4"><a href="#Listing-4" class="headerlink" title="Listing 4"></a>Listing 4</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">var data []string</span><br><span class="line">data &#x3D; append(data, &quot;string&quot;)</span><br></pre></td></tr></table></figure>
+
+<p><code>append</code>函数的转变操作使用值语义。将切片值传递给 append，并在变化之后返回一个新切片值。</p>
+<p>总是除了<code>unmarshaling</code>，它需要使用指针语义。</p>
+<h3 id="Listing-5"><a href="#Listing-5" class="headerlink" title="Listing 5"></a>Listing 5</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">func (ip *IP) UnmarshalText(text []byte) error &#123;</span><br><span class="line">    if len(text) &#x3D;&#x3D; 0 &#123;</span><br><span class="line">        *ip &#x3D; nil</span><br><span class="line">        return nil</span><br><span class="line">    &#125;</span><br><span class="line">    s :&#x3D; string(text)</span><br><span class="line">    x :&#x3D; ParseIP(s)</span><br><span class="line">    if x &#x3D;&#x3D; nil &#123;</span><br><span class="line">        return &amp;ParseError&#123;Type: &quot;IP address&quot;, Text: s&#125;</span><br><span class="line">    &#125;</span><br><span class="line">    *ip &#x3D; x</span><br><span class="line">    return nil</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>UnmarshalText</code>实现<code>encoding.TextUnmarshaler</code>接口。<br>如果没有使用指针语义，根本无法实现。<br>但这是可以的，因为共享值通常是安全的。<br>除了<code>unmarshaling</code>之外，如果为一个引用类型使用指针语义，你应该三思。</p>
+<h2 id="User-Defined-Types"><a href="#User-Defined-Types" class="headerlink" title="User Defined Types"></a>User Defined Types</h2><p>这是你最多需要作出决定的地方。你必须在你声明类型的时候决定使用什么语义。</p>
+<p>如果我要求你给<code>time</code>包编写<code>API</code>接口，给你这种类型。</p>
+<h3 id="Listing-6"><a href="#Listing-6" class="headerlink" title="Listing 6"></a>Listing 6</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">type Time struct &#123;</span><br><span class="line">    sec  int64</span><br><span class="line">    nsec int32</span><br><span class="line">    loc  *Location</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>你会使用什么语义？</p>
+<p>在<code>Time</code>包中查看此类型的实现以及工厂函数<code>Now</code>。</p>
+<h3 id="Listing-7"><a href="#Listing-7" class="headerlink" title="Listing 7"></a>Listing 7</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">func Now() Time &#123;</span><br><span class="line">  	sec, nsec :&#x3D; now()</span><br><span class="line">  	return Time&#123;sec + unixToInternal, nsec, Local&#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>工厂函数对于类型来说是一种非常重要的函数，因为它告诉你（这种类型）所选择的语义。<br><code>Now</code>函数就很清晰地（向我们）表明使用了值语义。<br>该函数创建一个类型为<code>Time</code> 的值并将该值的副本返回给调用者。<br>共享<code>Time</code>值不是必要的，（因为）他们的生命周期内不需要一直存在于堆上。</p>
+<p>再看一下 Add 方法，它也是一个转变操作。</p>
+<h3 id="Listing-8"><a href="#Listing-8" class="headerlink" title="Listing 8"></a>Listing 8</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">func (t Time) Add(d Duration) Time &#123;</span><br><span class="line">  	t.sec +&#x3D; int64(d &#x2F; 1e9)</span><br><span class="line">  	nsec :&#x3D; t.nsec + int32(d%1e9)</span><br><span class="line">  	if nsec &gt;&#x3D; 1e9 &#123;</span><br><span class="line">  		t.sec++</span><br><span class="line">  		nsec -&#x3D; 1e9</span><br><span class="line">  	&#125; else if nsec &lt; 0 &#123;</span><br><span class="line">  		t.sec--</span><br><span class="line">  		nsec +&#x3D; 1e9</span><br><span class="line">  	&#125;</span><br><span class="line">  	t.nsec &#x3D; nsec</span><br><span class="line">  	return t</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>你可以再次看到<code>Add</code>方法遵循类型所选择的语义。<br><code>Add</code>方法使用一个值接收器来操作它自己的<code>Time</code>值副本。其中，<code>Time</code>值副本在调用中使用。它将修改自己的副本，并将<code>Time</code>值的新副本返回给调用者。</p>
+<p>以下是一个接受<code>Time</code>值的函数：</p>
+<h3 id="Listing-9"><a href="#Listing-9" class="headerlink" title="Listing 9"></a>Listing 9</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">func div(t Time, d Duration) (qmod2 int, r Duration) &#123;</span><br></pre></td></tr></table></figure>
+
+<p>再一次，接受<code>Time</code>类型的值使用值语义。唯一使用指针语义的<code>Time API</code>接口，是这些<code>Unmarshal</code>相关的函数：</p>
+<h3 id="Listing-10"><a href="#Listing-10" class="headerlink" title="Listing 10"></a>Listing 10</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">func (t *Time) UnmarshalBinary(data []byte) error &#123;</span><br><span class="line">func (t *Time) GobDecode(data []byte) error &#123;</span><br><span class="line">func (t *Time) UnmarshalJSON(data []byte) error &#123;</span><br><span class="line">func (t *Time) UnmarshalText(data []byte) error &#123;</span><br></pre></td></tr></table></figure>
+
+<p>大多数情况下，使用值语义的能力是有限的。<br>将值从一个函数传递到另一个函数，（通常）使用值拷贝的方法是不正确或者不合理的。<br>修改数据需要将其隔离成单个值再进行共享。<br>这时，应该使用指针语义。<br>如果你没办法 100% 确定拷贝值是正确并且合理的，那就使用指针语义吧。</p>
+<p>查看<code>os</code>包中的<code>File</code>类型的生产函数。</p>
+<h3 id="Listing-11"><a href="#Listing-11" class="headerlink" title="Listing 11"></a>Listing 11</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">func Open(name string) (file *File, err error) &#123;</span><br><span class="line">    return OpenFile(name, O_RDONLY, 0)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>Open</code>函数返回一个<code>File</code>类型的指针。这意味着，对于<code>File</code>类型值，你应该使用指针语义来共享<code>File</code>的值。将指针语义修改为值语义，可能会对你的程序造成破坏性影响。当你与一个函数共享值时，最好假定你不允许拷贝值的指针并使用这个指针。否则，不知道将会出现什么样的异常情况。</p>
+<p>查看更多的 API， 你将会看到更多使用指针语义的例子。</p>
+<h3 id="Listing-12"><a href="#Listing-12" class="headerlink" title="Listing 12"></a>Listing 12</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">func (f *File) Chdir() error &#123;</span><br><span class="line">    if f &#x3D;&#x3D; nil &#123;</span><br><span class="line">        return ErrInvalid</span><br><span class="line">    &#125;</span><br><span class="line">    if e :&#x3D; syscall.Fchdir(f.fd); e !&#x3D; nil &#123;</span><br><span class="line">        return &amp;PathError&#123;&quot;chdir&quot;, f.name, e&#125;</span><br><span class="line">    &#125;</span><br><span class="line">    return nil</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>虽然<code>File</code>值永远不会被修改，但是<code>Chdir</code>方法还是使用指针语义。该方法必须遵循该类型的语义约定。</p>
+<h3 id="Listing-13"><a href="#Listing-13" class="headerlink" title="Listing 13"></a>Listing 13</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">func epipecheck(file *File, e error) &#123;</span><br><span class="line">    if e &#x3D;&#x3D; syscall.EPIPE &#123;</span><br><span class="line">        if atomic.AddInt32(&amp;file.nepipe, 1) &gt;&#x3D; 10 &#123;</span><br><span class="line">            sigpipe()</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        atomic.StoreInt32(&amp;file.nepipe, 0)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这是一个名为<code>epipecheck 的</code>函数，它使用指针来接收<code>File</code>值。再次注意一下，对于<code>File</code>值，一致使用指针语义。</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>我在做代码<code>review</code>时，会寻找值或者指针语义是否使用一致。它可以帮助你保证代码的一致性和可预测性。它还使每个人能保持清晰和一致的心智模型。随着代码库和团队变得越来越大，值或者指针语义的一致性使用将会越来越重要。</p>
+<p>Go 语言令人不解的地方在于指针和值语义之间的选择早已超出了接收器和函数参数的声明范围。接口的机制，函数值和切片都在语言的工作范围内。在将来的文章中，我将在这些语言的不同部分中展示值或者指针语义。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/06/25/Go/Translation/GoBehaviorOfChannels/" rel="prev" title="GoBehaviorOfChannels">
+      <i class="fa fa-chevron-left"></i> GoBehaviorOfChannels
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/06/26/Go/Translation/GoExecutingTestsWithDocker/" rel="next" title="GoExecutingTestsWithDocker">
+      GoExecutingTestsWithDocker <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Design-Philosophy-On-Data-And-Semantics"><span class="nav-number">1.</span> <span class="nav-text">Design Philosophy On Data And Semantics</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Design-Philosophies"><span class="nav-number">1.2.</span> <span class="nav-text">Design Philosophies</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Mental-Models"><span class="nav-number">1.3.</span> <span class="nav-text">Mental Models</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Debugging"><span class="nav-number">1.4.</span> <span class="nav-text">Debugging</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Readability"><span class="nav-number">1.5.</span> <span class="nav-text">Readability</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Data-Oriented-Design"><span class="nav-number">1.6.</span> <span class="nav-text">Data Oriented Design</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Type-Is-Life"><span class="nav-number">1.7.</span> <span class="nav-text">Type (Is Life)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Data-With-Capability"><span class="nav-number">1.8.</span> <span class="nav-text">Data (With Capability)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Polymorphism"><span class="nav-number">1.9.</span> <span class="nav-text">Polymorphism</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Prototype-First-Approach"><span class="nav-number">1.10.</span> <span class="nav-text">Prototype First Approach</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Semantic-Guidelines"><span class="nav-number">1.11.</span> <span class="nav-text">Semantic Guidelines</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Built-In-Types"><span class="nav-number">1.12.</span> <span class="nav-text">Built-In Types</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-1"><span class="nav-number">1.12.1.</span> <span class="nav-text">Listing 1</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Reference-Types"><span class="nav-number">1.13.</span> <span class="nav-text">Reference Types</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-2"><span class="nav-number">1.13.1.</span> <span class="nav-text">Listing 2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-3"><span class="nav-number">1.13.2.</span> <span class="nav-text">Listing 3</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-4"><span class="nav-number">1.13.3.</span> <span class="nav-text">Listing 4</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-5"><span class="nav-number">1.13.4.</span> <span class="nav-text">Listing 5</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#User-Defined-Types"><span class="nav-number">1.14.</span> <span class="nav-text">User Defined Types</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-6"><span class="nav-number">1.14.1.</span> <span class="nav-text">Listing 6</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-7"><span class="nav-number">1.14.2.</span> <span class="nav-text">Listing 7</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-8"><span class="nav-number">1.14.3.</span> <span class="nav-text">Listing 8</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-9"><span class="nav-number">1.14.4.</span> <span class="nav-text">Listing 9</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-10"><span class="nav-number">1.14.5.</span> <span class="nav-text">Listing 10</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-11"><span class="nav-number">1.14.6.</span> <span class="nav-text">Listing 11</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-12"><span class="nav-number">1.14.7.</span> <span class="nav-text">Listing 12</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Listing-13"><span class="nav-number">1.14.8.</span> <span class="nav-text">Listing 13</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Conclusion"><span class="nav-number">1.15.</span> <span class="nav-text">Conclusion</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Hei"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Hei</p>
+  <div class="site-description" itemprop="description">心里有梦，眼里有光</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/hei6775" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;hei6775" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/8523015/hey6775" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;8523015&#x2F;hey6775" rel="noopener" target="_blank"><i class="fab fa-stack-overflow fa-fw"></i>StackOverflow</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Hei</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
